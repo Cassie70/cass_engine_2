@@ -30,15 +30,16 @@ protected:
 			.origin = { 0, 0 },
 			.uv = { 0.5, 0.5, 1, 1 }
 		});
+
+		Renderer2D::DrawLine({
+			.start = {400,300},
+			.end = {500, 400},
+			.weight = 5
+			});
 	
 		Renderer2D::EndScene();
 
 		auto& stats = Renderer2D::GetStats();
-		std::cout
-			<< "Quads: " << stats.QuadCount
-			<< " | DrawCalls: " << stats.DrawCalls
-			<< " | " << stats.VertexCount
-			<< std::endl;
 	}
 };
 

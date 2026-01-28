@@ -340,3 +340,27 @@ void Renderer2D::DrawQuad(const QuadProperties& properties) {
 	s_Data.IndexCount += 6;
 	s_Data.Stats.QuadCount++;
 }
+
+void Renderer2D::DrawLine(const LineProperties& properties)
+{
+	cass::Vector2<float> dir =
+		properties.end - properties.start;
+
+	float length = sqrt(dir.x * dir.x + dir.y * dir.y);
+
+	float angle = atan2(dir.y, dir.x);
+
+	cass::Vector2<float> center =
+		(properties.start + properties.end) * 0.5f;
+
+	cass::Matrix4<float> transform =
+		cass::Matrix4<float>()
+		.translate({ center.x, center.y})
+		.rotateZ(angle)
+		.scale({ length, properties.weight});
+
+	DrawQuad({
+		.transform = transform,
+		.argb = properties.argb
+		});
+}

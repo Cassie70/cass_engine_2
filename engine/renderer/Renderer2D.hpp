@@ -19,6 +19,13 @@ struct QuadProperties {
     cass::Vector4<float> uv = { 0, 0, 1, 1 };
 };
 
+struct LineProperties {
+	cass::Vector2<float> start;
+	cass::Vector2<float> end;
+	float weight = 1;
+	uint32_t argb = 0xFFFFFFFF;
+};
+
 class Renderer2D {
 public:
 	static const Renderer2DStats& GetStats();
@@ -29,5 +36,6 @@ public:
 	static void EndScene();
 
 	static void DrawQuad(const QuadProperties &properties);
+	static void DrawLine(const LineProperties &properties);
 
 };
