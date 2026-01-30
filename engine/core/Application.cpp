@@ -3,8 +3,11 @@
 #include "Time.hpp"
 #include <Renderer2D.hpp>
 
+Application* Application::s_Instance = nullptr;
+
 Application::Application(const WindowProperties& props)
 {
+    s_Instance = this;
     m_Window = new Window(props);
     Renderer::Init();
     Renderer2D::Init();
@@ -17,7 +20,7 @@ Application::~Application()
 
 void Application::Run()
 {
-    while (true)
+    while (!m_Window->ShouldClose())
     {
         float deltaTime = Time::GetDeltaTime();
 

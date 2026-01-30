@@ -17,13 +17,31 @@ struct QuadProperties {
     Texture2D* texture = nullptr;
     cass::Vector2<float> origin = { 0, 0 };
     cass::Vector4<float> uv = { 0, 0, 1, 1 };
+	bool isCircle = false;
 };
 
-struct LineProperties {
+struct CartesianLineProperties {
 	cass::Vector2<float> start;
 	cass::Vector2<float> end;
-	float weight = 1;
 	uint32_t argb = 0xFFFFFFFF;
+	float weight = 1;
+	float origin = 0.5;
+};
+
+struct PolarLineProperties {
+	cass::Vector2<float> start;
+	float length;
+	float angle;
+	uint32_t argb = 0xFFFFFFFF;
+	float weight = 1;
+	float origin = 0.5;
+};
+
+struct CircleProperties {
+	cass::Vector2<float> center;
+	float radius;
+	uint32_t argb = 0xFFFFFFFF;
+	Texture2D* texture = nullptr;
 };
 
 class Renderer2D {
@@ -36,6 +54,8 @@ public:
 	static void EndScene();
 
 	static void DrawQuad(const QuadProperties &properties);
-	static void DrawLine(const LineProperties &properties);
+	static void DrawCartesianLine(const CartesianLineProperties &properties);
+	static void DrawPolarLine(const PolarLineProperties &properties);
+	static void DrawCircle(const CircleProperties &properties);
 
 };

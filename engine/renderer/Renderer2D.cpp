@@ -8,10 +8,11 @@ struct QuadVertex {
 	uint32_t ColorARGB;
 	cass::Vector2<float> TexCoords;
 	float TexIndex = 0;
+	cass::Vector2<float> LocalPos;
 };
 
 struct Renderer2DData {
-	static const uint32_t MaxQuads = 1000;
+	static const uint32_t MaxQuads = 10000;
 	static const uint32_t MaxVertices = MaxQuads * 4;
 	static const uint32_t MaxIndices = MaxQuads * 6;
 	static const uint32_t MaxTextureSlots = 16;
@@ -58,12 +59,14 @@ static uint32_t CreateShader() {
         layout(location = 1) in uint a_Color;
         layout(location = 2) in vec2 a_TexCoord;
         layout(location = 3) in float a_TexIndex;
+		layout(location = 4) in vec2 a_LocalPos;
 
         uniform mat4 u_ViewProjection;
 
         out vec4 v_Color;
         out vec2 v_TexCoord;
         out float v_TexIndex;
+		out vec2 v_LocalPos;
 
         vec4 UnpackARGB(uint c) {
             float a = float((c >> 24) & 0xFF) / 255.0;
@@ -77,6 +80,7 @@ static uint32_t CreateShader() {
             v_Color = UnpackARGB(a_Color);
             v_TexCoord = a_TexCoord;
             v_TexIndex = a_TexIndex;
+			v_LocalPos = a_LocalPos;
             gl_Position = u_ViewProjection * vec4(a_Position, 1.0);
         }
     )";
@@ -86,14 +90,22 @@ static uint32_t CreateShader() {
         in vec4 v_Color;
         in vec2 v_TexCoord;
         in float v_TexIndex;
+		in vec2 v_LocalPos;
         out vec4 FragColor;
         uniform sampler2D u_Textures[16];
 
-        void main() {
-            int index = int(v_TexIndex);
-            vec4 texColor = texture(u_Textures[index], v_TexCoord);
-            FragColor = texColor * v_Color;
-        }
+        void main()
+		{
+			vec4 texColor = texture(u_Textures[int(v_TexIndex)], v_TexCoord);
+			vec4 color = texColor * v_Color;
+
+			float dist = length(v_LocalPos);
+
+			if (dist > 0.5)
+				discard;
+
+			FragColor = color;
+		}
     )";
 
 	uint32_t program = glCreateProgram();
@@ -151,6 +163,13 @@ void Renderer2D::Init() {
 	glEnableVertexAttribArray(3); // tex index
 	glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE,
 		sizeof(QuadVertex), (const void*)offsetof(QuadVertex, TexIndex));
+
+	glEnableVertexAttribArray(4);
+	glVertexAttribPointer(
+		4, 2, GL_FLOAT, GL_FALSE,
+		sizeof(QuadVertex),
+		(const void*)offsetof(QuadVertex, LocalPos)
+	);
 
 	std::vector<uint32_t> indices(Renderer2DData::MaxIndices);
 
@@ -309,7 +328,14 @@ void Renderer2D::DrawQuad(const QuadProperties& properties) {
 		{ uv.z, uv.t }, // top-right
 		{ uv.x, uv.t }  // top-left
 	};
-
+	
+	cass::Vector2<float> local[4] = {
+		{-0.5f,-0.5f},
+		{ 0.5f,-0.5f},
+		{ 0.5f, 0.5f},
+		{-0.5f, 0.5f} 
+	};
+	
 	cass::Vector2<float> o = properties.origin;
 
 	cass::Vector4<float> quadPositions[4] = {
@@ -334,6 +360,11 @@ void Renderer2D::DrawQuad(const QuadProperties& properties) {
 		s_Data.VertexBufferPtr->TexCoords = texCoords[i];
 		s_Data.VertexBufferPtr->TexIndex = textureIndex;
 
+		if (properties.isCircle)
+			s_Data.VertexBufferPtr->LocalPos = local[i];
+		else
+			s_Data.VertexBufferPtr->LocalPos = { 0.0f, 0.0f };
+
 		s_Data.VertexBufferPtr++;
 	}
 
@@ -341,26 +372,43 @@ void Renderer2D::DrawQuad(const QuadProperties& properties) {
 	s_Data.Stats.QuadCount++;
 }
 
-void Renderer2D::DrawLine(const LineProperties& properties)
+
+
+void Renderer2D::DrawCartesianLine(const CartesianLineProperties& properties)
 {
-	cass::Vector2<float> dir =
-		properties.end - properties.start;
+	float dx = properties.end.x - properties.start.x;
+	float dy = properties.end.y - properties.start.y;
 
-	float length = sqrt(dir.x * dir.x + dir.y * dir.y);
-
-	float angle = atan2(dir.y, dir.x);
-
-	cass::Vector2<float> center =
-		(properties.start + properties.end) * 0.5f;
-
-	cass::Matrix4<float> transform =
-		cass::Matrix4<float>()
-		.translate({ center.x, center.y})
-		.rotateZ(angle)
-		.scale({ length, properties.weight});
-
-	DrawQuad({
-		.transform = transform,
-		.argb = properties.argb
+	DrawPolarLine({
+		.start = { properties.start.x, properties.start.y },
+		.length = hypot(dx, dy),
+		.angle = atan2(dy, dx),
+		.argb = properties.argb,
+		.weight = properties.weight
 		});
+}
+
+void Renderer2D::DrawPolarLine(const PolarLineProperties& properties)
+{
+	DrawQuad({
+		.transform = cass::Matrix4<float>()
+			.translate({ properties.start.x, properties.start.y})
+			.rotateZ(properties.angle)
+			.scale({properties.length, properties.weight}),
+		.argb = properties.argb,
+		.origin = {0,properties.origin}
+		});
+}
+
+void Renderer2D::DrawCircle(const CircleProperties& properties)
+{
+	DrawQuad({
+		.transform = cass::Matrix4<float>()
+			.translate(properties.center)
+			.scale(properties.radius),
+		.argb = properties.argb,
+		.texture = properties.texture,
+		.origin = {0.5,0.5},
+		.isCircle = true
+	});
 }

@@ -20,6 +20,7 @@ void Window::Init(const WindowProperties& props)
     m_Width = props.Width;
     m_Height = props.Height;
     m_VSync = props.VSync;
+    m_Title = props.Title;
 
     if (!glfwInit())
     {
@@ -82,4 +83,15 @@ void Window::SetVSync(bool enabled)
 {
     glfwSwapInterval(enabled ? 1 : 0);
     m_VSync = enabled;
+}
+
+bool Window::ShouldClose() const
+{
+    return glfwWindowShouldClose((GLFWwindow*)m_Window);
+}
+
+void Window::SetTitle(const std::string& title)
+{
+    m_Title = title;
+    glfwSetWindowTitle((GLFWwindow*)m_Window, title.c_str());
 }
