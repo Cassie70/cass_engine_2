@@ -405,10 +405,29 @@ void Renderer2D::DrawCircle(const CircleProperties& properties)
 	DrawQuad({
 		.transform = cass::Matrix4<float>()
 			.translate(properties.center)
-			.scale(properties.radius),
+			.scale(properties.radius * 2),
 		.argb = properties.argb,
 		.texture = properties.texture,
 		.origin = {0.5,0.5},
 		.isCircle = true
 	});
+}
+
+void Renderer2D::DrawSprite(const SpriteProperties& properties)
+{
+
+	cass::Vector2<float> scale = properties.size;
+
+	if (properties.flipX) scale.x *= -1.0f;
+	if (properties.flipY) scale.y *= -1.0f;
+	
+	DrawQuad({
+		.transform = cass::Matrix4<float>()
+			.translate(properties.position)
+			.scale(scale)
+			.rotateZ(properties.angle),
+		.texture = properties.texture,
+		.uv = properties.uv,
+		.origin = properties.origin
+		});
 }

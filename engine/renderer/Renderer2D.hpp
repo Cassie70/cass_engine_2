@@ -15,8 +15,8 @@ struct QuadProperties {
     cass::Matrix4<float>transform;
     uint32_t argb = 0xFFFFFFFF;
     Texture2D* texture = nullptr;
-    cass::Vector2<float> origin = { 0, 0 };
     cass::Vector4<float> uv = { 0, 0, 1, 1 };
+    cass::Vector2<float> origin = { 0, 0 };
 	bool isCircle = false;
 };
 
@@ -44,6 +44,18 @@ struct CircleProperties {
 	Texture2D* texture = nullptr;
 };
 
+struct SpriteProperties {
+	cass::Vector2<float> position;
+	cass::Vector2<float> size;
+	float angle;
+	Texture2D* texture = nullptr;
+	cass::Vector4<float> uv = { 0, 0, 1, 1 };
+	cass::Vector2<float> origin = { 0, 0 };
+	bool flipX = false;
+	bool flipY = false;
+
+};
+
 class Renderer2D {
 public:
 	static const Renderer2DStats& GetStats();
@@ -57,5 +69,6 @@ public:
 	static void DrawCartesianLine(const CartesianLineProperties &properties);
 	static void DrawPolarLine(const PolarLineProperties &properties);
 	static void DrawCircle(const CircleProperties &properties);
+	static void DrawSprite(const SpriteProperties& properties);
 
 };

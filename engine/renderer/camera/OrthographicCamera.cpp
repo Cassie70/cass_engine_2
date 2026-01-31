@@ -27,5 +27,5 @@ void OrthographicCamera::RecalculateViewMatrix()
     m_View.rotateZ(-m_Rotation);
     m_View.translate(-m_Position);
 
-    m_ViewProjection = m_View * m_Projection;
+    m_ViewProjection = m_Projection * m_View;
 }
