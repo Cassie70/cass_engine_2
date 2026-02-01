@@ -3,12 +3,14 @@
 #include <array>
 #include <vector>
 
+std::unordered_map<std::string, Font> Renderer2D::s_Fonts;
+
 struct QuadVertex {
 	cass::Vector3<float> Position;
 	uint32_t ColorARGB;
 	cass::Vector2<float> TexCoords;
 	float TexIndex = 0;
-	cass::Vector2<float> LocalPos;
+	float isText = 0;
 };
 
 struct Renderer2DData {
@@ -59,14 +61,14 @@ static uint32_t CreateShader() {
         layout(location = 1) in uint a_Color;
         layout(location = 2) in vec2 a_TexCoord;
         layout(location = 3) in float a_TexIndex;
-		layout(location = 4) in vec2 a_LocalPos;
+		layout(location = 4) in float a_IsText;
 
         uniform mat4 u_ViewProjection;
 
         out vec4 v_Color;
         out vec2 v_TexCoord;
         out float v_TexIndex;
-		out vec2 v_LocalPos;
+		out float v_IsText;
 
         vec4 UnpackARGB(uint c) {
             float a = float((c >> 24) & 0xFF) / 255.0;
@@ -80,31 +82,33 @@ static uint32_t CreateShader() {
             v_Color = UnpackARGB(a_Color);
             v_TexCoord = a_TexCoord;
             v_TexIndex = a_TexIndex;
-			v_LocalPos = a_LocalPos;
+			v_IsText = a_IsText; 
             gl_Position = u_ViewProjection * vec4(a_Position, 1.0);
         }
     )";
 
 	const char* fragmentSrc = R"(
-        #version 450 core
-        in vec4 v_Color;
-        in vec2 v_TexCoord;
-        in float v_TexIndex;
-		in vec2 v_LocalPos;
-        out vec4 FragColor;
-        uniform sampler2D u_Textures[16];
+		#version 450 core
 
-        void main()
-		{
+		in vec4 v_Color;
+		in vec2 v_TexCoord;
+		in float v_TexIndex;
+		in float v_IsText;
+
+		out vec4 FragColor;
+
+		uniform sampler2D u_Textures[16];
+
+		void main() { 
 			vec4 texColor = texture(u_Textures[int(v_TexIndex)], v_TexCoord);
-			vec4 color = texColor * v_Color;
 
-			float dist = length(v_LocalPos);
-
-			if (dist > 0.5)
-				discard;
-
-			FragColor = color;
+			if(v_IsText > 0.5) {
+				// textura FreeType (solo canal rojo es alpha)
+				FragColor = vec4(v_Color.rgb, v_Color.a * texColor.r);
+			} else {
+				// sprite normal RGBA
+				FragColor = texColor * v_Color;
+			}
 		}
     )";
 
@@ -165,11 +169,8 @@ void Renderer2D::Init() {
 		sizeof(QuadVertex), (const void*)offsetof(QuadVertex, TexIndex));
 
 	glEnableVertexAttribArray(4);
-	glVertexAttribPointer(
-		4, 2, GL_FLOAT, GL_FALSE,
-		sizeof(QuadVertex),
-		(const void*)offsetof(QuadVertex, LocalPos)
-	);
+	glVertexAttribPointer(4, 1, GL_FLOAT, GL_FALSE,
+		sizeof(QuadVertex), (const void*)offsetof(QuadVertex, isText));
 
 	std::vector<uint32_t> indices(Renderer2DData::MaxIndices);
 
@@ -280,6 +281,7 @@ void Renderer2D::EndScene()
 
 	glDrawElements(GL_TRIANGLES, s_Data.IndexCount, GL_UNSIGNED_INT, nullptr);
 	s_Data.Stats.DrawCalls++;
+	s_Data.Stats.TextureCount += s_Data.TextureSlotIndex;
 
 	s_Data.IndexCount = 0;
 	s_Data.VertexBufferPtr = s_Data.VertexBufferBase;
@@ -359,12 +361,10 @@ void Renderer2D::DrawQuad(const QuadProperties& properties) {
 		s_Data.VertexBufferPtr->ColorARGB = properties.argb;
 		s_Data.VertexBufferPtr->TexCoords = texCoords[i];
 		s_Data.VertexBufferPtr->TexIndex = textureIndex;
-
-		if (properties.isCircle)
-			s_Data.VertexBufferPtr->LocalPos = local[i];
+		if(properties.isText)
+			s_Data.VertexBufferPtr->isText = 1.0;
 		else
-			s_Data.VertexBufferPtr->LocalPos = { 0.0f, 0.0f };
-
+			s_Data.VertexBufferPtr->isText = 0;
 		s_Data.VertexBufferPtr++;
 	}
 
@@ -400,19 +400,6 @@ void Renderer2D::DrawPolarLine(const PolarLineProperties& properties)
 		});
 }
 
-void Renderer2D::DrawCircle(const CircleProperties& properties)
-{
-	DrawQuad({
-		.transform = cass::Matrix4<float>()
-			.translate(properties.center)
-			.scale(properties.radius * 2),
-		.argb = properties.argb,
-		.texture = properties.texture,
-		.origin = {0.5,0.5},
-		.isCircle = true
-	});
-}
-
 void Renderer2D::DrawSprite(const SpriteProperties& properties)
 {
 
@@ -430,4 +417,112 @@ void Renderer2D::DrawSprite(const SpriteProperties& properties)
 		.uv = properties.uv,
 		.origin = properties.origin
 		});
+}
+
+void Renderer2D::LoadFont(const std::string& path, uint32_t size)
+{
+	std::string key = path + "@" + std::to_string(size);
+
+	if (s_Fonts.find(key) != s_Fonts.end()) {
+		std::cout << "[Renderer2D] Font already loaded: " << key << "\n";
+		return; // ya cargada
+	}
+
+	FT_Library ft;
+	FT_Face face;
+
+	FT_Init_FreeType(&ft);
+	FT_New_Face(ft, path.c_str(), 0, &face);
+	FT_Set_Pixel_Sizes(face, 0, size);
+
+	if (FT_Init_FreeType(&ft))
+	{
+		std::cout << "[Renderer2D] ERROR: FreeType init failed\n";
+		return;
+	}
+
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+	Font font;
+	uint32_t loadedGlyphs = 0;
+
+	for (unsigned char c = 0; c < 128; c++)
+	{
+		if (FT_Load_Char(face, c, FT_LOAD_RENDER)) {
+			std::cout << "[Renderer2D] Warning: Failed glyph '" << c << "'\n";
+			continue;
+		}
+
+		FT_GlyphSlot g = face->glyph;
+
+		Texture2D* tex = new Texture2D(
+			g->bitmap.width,
+			g->bitmap.rows,
+			g->bitmap.buffer
+		);
+
+		FTGlyph glyph;
+		glyph.Texture = tex;
+		glyph.Size = { (float)g->bitmap.width, (float)g->bitmap.rows };
+		glyph.Bearing = { (float)g->bitmap_left, (float)g->bitmap_top };
+		glyph.Advance = (float)(g->advance.x >> 6);
+
+		font.Glyphs.insert({ c, glyph });
+		loadedGlyphs++;
+	}
+
+	s_Fonts[key] = font;
+
+	FT_Done_Face(face);
+	FT_Done_FreeType(ft);
+
+	if (loadedGlyphs > 0)
+	{
+		std::cout << "[Renderer2D] Font loaded OK: "
+			<< path << " @ " << size
+			<< "px (" << loadedGlyphs << " glyphs)\n";
+	}
+	else
+	{
+		std::cout << "[Renderer2D] ERROR: Font loaded but no glyphs generated: "
+			<< path << "\n";
+	}
+}
+
+void Renderer2D::DrawText(const TextProperties& properties)
+{
+	if (s_Fonts.find(properties.fontKey) == s_Fonts.end())
+	{
+		std::cout << "Font not found: " << properties.fontKey << "\n";
+		return;
+	}
+
+	Font& font = s_Fonts[properties.fontKey];
+
+	cass::Vector2<float> cursor = properties.position;
+
+	for (char c : properties.text)
+	{
+		if (font.Glyphs.find(c) == font.Glyphs.end())
+			continue;
+
+		FTGlyph& g = font.Glyphs[c];
+
+		float x = cursor.x + g.Bearing.x * properties.scale.x;
+		float y = cursor.y - (g.Size.y - g.Bearing.y) * properties.scale.y;
+
+		float w = g.Size.x * properties.scale.x;
+		float h = g.Size.y * properties.scale.y;
+
+		QuadProperties qp;
+		qp.texture = g.Texture;
+		qp.argb = properties.argb;
+		qp.uv = { 0,1,1,0 };
+		qp.isText = true;
+		qp.transform = cass::Matrix4<float>().translate({ x,y,0 }).scale({ w,h,1 });
+
+		DrawQuad(qp);
+
+		cursor.x += g.Advance * properties.scale.x;
+	}
 }

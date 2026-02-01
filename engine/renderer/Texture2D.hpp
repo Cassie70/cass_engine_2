@@ -8,6 +8,7 @@ class Renderer2D; // forward declaration
 class Texture2D {
 public:
     Texture2D(const std::string& path);
+    Texture2D(uint32_t width, uint32_t height, const unsigned char* data);
     ~Texture2D();
 
     uint32_t GetWidth() const { return m_Width; }

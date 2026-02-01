@@ -34,21 +34,22 @@ target_include_directories(glad PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/glad/include
 )
 
-
 # ---------- GLFW ----------
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 
 add_subdirectory(dependencies/glfw)
+add_subdirectory(dependencies/freetype)
 
 # ---------- OpenGL ----------
 find_package(OpenGL REQUIRED)
 
 # ================== LINKING ==================
 
-target_link_libraries(engine PRIVATE
+target_link_libraries(engine PUBLIC
     glfw
     glad
     OpenGL::GL
+    freetype
 )

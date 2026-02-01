@@ -41,6 +41,32 @@ Texture2D::Texture2D(const std::string& path)
 
 }
 
+Texture2D::Texture2D(uint32_t width, uint32_t height, const unsigned char* data)
+{
+    m_Width = width;
+    m_Height = height;
+
+    glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
+
+    // FreeType genera 1 canal (rojo)
+    glTextureStorage2D(m_RendererID, 1, GL_R8, m_Width, m_Height);
+
+    glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    glTextureSubImage2D(
+        m_RendererID,
+        0,
+        0, 0,
+        m_Width, m_Height,
+        GL_RED,
+        GL_UNSIGNED_BYTE,
+        data
+    );
+}
+
 Texture2D::~Texture2D() {
     if (m_RendererID)
         glDeleteTextures(1, &m_RendererID);
