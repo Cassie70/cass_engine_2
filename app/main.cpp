@@ -21,7 +21,7 @@ private:
 	cass::Vector2<float> marioDimensions;
 	cass::Vector2<float> marioOrigin;
 	bool marioLeft = false;
-	float velocity = 100;
+	float velocity = 300;
 	float jumpVelocity = 750;
 	const float gravity = -2000.0f;
 	bool isGrounded = false;
@@ -49,7 +49,7 @@ public:
 		0.0f, props.Height), props(props) {
 
 		Renderer::SetClearColor(0xFF1E1E1E);
-		Renderer2D::LoadFont("assets/arial.ttf", 24);
+		Renderer2D::LoadFont("assets/arial.ttf", 128);
 
 		marioPosition = { 20, 60 };
 		marioVelocity = { 0,0 };
@@ -142,13 +142,13 @@ protected:
 		}
 
 
-		/*
+		
 		if(marioPosition.x > props.Width / 6)
 		m_Camera.SetPosition({
 			marioPosition.x - (props.Width / 6),
 			0,0
 		});
-		*/
+		
 		Renderer2D::BeginScene(m_Camera);
 
 		Renderer2D::DrawSprite({
@@ -161,10 +161,33 @@ protected:
 			});
 
 		Renderer2D::DrawText({
-			.fontKey = "assets/arial.ttf@24",
+			.fontKey = "assets/arial.ttf@128",
 			.text = "ola cara de bola",
 			.position = {400,300},
-			.angle = 3.141592/4,
+			.argb = 0xFFFF0000
+			});
+
+		Renderer2D::DrawText({
+			.fontKey = "assets/arial.ttf@128",
+			.text = "ola cara de bola",
+			.position = {400,200},
+			.scale = {0.5, 0.5},
+			.argb = 0xFFFF0000
+			});
+
+		Renderer2D::DrawText({
+			.fontKey = "assets/arial.ttf@128",
+			.text = "ola cara de bola",
+			.position = {400,150},
+			.scale = {0.25, 0.25},
+			.argb = 0xFFFF0000
+		});
+
+		Renderer2D::DrawText({
+			.fontKey = "assets/arial.ttf@128",
+			.text = "ola cara de bola",
+			.position = {400,100},
+			.scale = {0.1, 0.1},
 			.argb = 0xFFFF0000
 			});
 
@@ -201,8 +224,8 @@ protected:
 int main() {
 
 	WindowProperties windowProps = {
-		.Width = 800,
-		.Height = 600,
+		.Width = 1920,
+		.Height = 1080,
 		.Title = "Hola cara de bola",
 		.VSync = true
 	};

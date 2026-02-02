@@ -6,17 +6,19 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
-struct FTGlyph
-{
-	Texture2D* Texture;
+struct FTGlyph {
 	cass::Vector2<float> Size;
 	cass::Vector2<float> Bearing;
 	float Advance;
+
+	cass::Vector2<float> UV0;
+	cass::Vector2<float> UV1;
 };
 
-struct Font
-{
+struct Font {
+	Texture2D* AtlasTexture;
 	std::unordered_map<char, FTGlyph> Glyphs;
+	float LineHeight;
 };
 
 struct Renderer2DStats {

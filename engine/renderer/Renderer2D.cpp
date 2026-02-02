@@ -289,6 +289,7 @@ void Renderer2D::EndScene()
 }
 
 void Renderer2D::DrawQuad(const QuadProperties& properties) {
+
 	Texture2D* texture = properties.texture
 		? properties.texture
 		: s_Data.TextureSlots[0];
@@ -329,13 +330,6 @@ void Renderer2D::DrawQuad(const QuadProperties& properties) {
 		{ uv.z, uv.y }, // bottom-right
 		{ uv.z, uv.t }, // top-right
 		{ uv.x, uv.t }  // top-left
-	};
-	
-	cass::Vector2<float> local[4] = {
-		{-0.5f,-0.5f},
-		{ 0.5f,-0.5f},
-		{ 0.5f, 0.5f},
-		{-0.5f, 0.5f} 
 	};
 	
 	cass::Vector2<float> o = properties.origin;
@@ -425,26 +419,50 @@ void Renderer2D::LoadFont(const std::string& path, uint32_t size)
 
 	if (s_Fonts.find(key) != s_Fonts.end()) {
 		std::cout << "[Renderer2D] Font already loaded: " << key << "\n";
-		return; // ya cargada
+		return;
 	}
 
 	FT_Library ft;
-	FT_Face face;
-
-	FT_Init_FreeType(&ft);
-	FT_New_Face(ft, path.c_str(), 0, &face);
-	FT_Set_Pixel_Sizes(face, 0, size);
-
-	if (FT_Init_FreeType(&ft))
-	{
+	if (FT_Init_FreeType(&ft)) {
 		std::cout << "[Renderer2D] ERROR: FreeType init failed\n";
 		return;
 	}
 
+	FT_Face face;
+	if (FT_New_Face(ft, path.c_str(), 0, &face)) {
+		std::cout << "[Renderer2D] ERROR: Failed to load font: " << path << "\n";
+		FT_Done_FreeType(ft);
+		return;
+	}
+
+	FT_Set_Pixel_Sizes(face, 0, size);
+
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
+	// ===============================
+	// Atlas settings
+	// ===============================
+
+	const uint32_t ATLAS_WIDTH = 1024;
+	const uint32_t ATLAS_HEIGHT = 1024;
+	const uint32_t PADDING = 1;
+
+	std::vector<unsigned char> atlasBuffer(
+		ATLAS_WIDTH * ATLAS_HEIGHT,
+		0
+	);
+
+	uint32_t x = 0;
+	uint32_t y = 0;
+	uint32_t rowHeight = 0;
+
 	Font font;
-	uint32_t loadedGlyphs = 0;
+
+	font.LineHeight = (float)(face->size->metrics.height >> 6);
+
+	// ===============================
+	// Pack glyphs
+	// ===============================
 
 	for (unsigned char c = 0; c < 128; c++)
 	{
@@ -455,38 +473,67 @@ void Renderer2D::LoadFont(const std::string& path, uint32_t size)
 
 		FT_GlyphSlot g = face->glyph;
 
-		Texture2D* tex = new Texture2D(
-			g->bitmap.width,
-			g->bitmap.rows,
-			g->bitmap.buffer
-		);
+		// New row if needed
+		if (x + g->bitmap.width + PADDING >= ATLAS_WIDTH) {
+			x = 0;
+			y += rowHeight + PADDING;
+			rowHeight = 0;
+		}
+
+		if (y + g->bitmap.rows >= ATLAS_HEIGHT) {
+			std::cout << "[Renderer2D] ERROR: Font atlas overflow!\n";
+			break;
+		}
+
+		// Copy bitmap into atlas buffer
+		for (uint32_t row = 0; row < g->bitmap.rows; row++)
+		{
+			memcpy(
+				&atlasBuffer[(x + (y + row) * ATLAS_WIDTH)],
+				&g->bitmap.buffer[row * g->bitmap.width],
+				g->bitmap.width
+			);
+		}
 
 		FTGlyph glyph;
-		glyph.Texture = tex;
+
 		glyph.Size = { (float)g->bitmap.width, (float)g->bitmap.rows };
 		glyph.Bearing = { (float)g->bitmap_left, (float)g->bitmap_top };
 		glyph.Advance = (float)(g->advance.x >> 6);
 
-		font.Glyphs.insert({ c, glyph });
-		loadedGlyphs++;
+		glyph.UV0 = {
+			(float)x / ATLAS_WIDTH,
+			(float)y / ATLAS_HEIGHT
+		};
+
+		glyph.UV1 = {
+			(float)(x + g->bitmap.width) / ATLAS_WIDTH,
+			(float)(y + g->bitmap.rows) / ATLAS_HEIGHT
+		};
+
+		font.Glyphs[c] = glyph;
+
+		x += g->bitmap.width + PADDING;
+		rowHeight = std::max(rowHeight, g->bitmap.rows);
 	}
+
+	// ===============================
+	// Create atlas texture
+	// ===============================
+
+	font.AtlasTexture = new Texture2D(
+		ATLAS_WIDTH,
+		ATLAS_HEIGHT,
+		atlasBuffer.data()
+	);
 
 	s_Fonts[key] = font;
 
 	FT_Done_Face(face);
 	FT_Done_FreeType(ft);
 
-	if (loadedGlyphs > 0)
-	{
-		std::cout << "[Renderer2D] Font loaded OK: "
-			<< path << " @ " << size
-			<< "px (" << loadedGlyphs << " glyphs)\n";
-	}
-	else
-	{
-		std::cout << "[Renderer2D] ERROR: Font loaded but no glyphs generated: "
-			<< path << "\n";
-	}
+	std::cout << "[Renderer2D] Font atlas created: "
+		<< path << " @ " << size << "px\n";
 }
 
 void Renderer2D::DrawText(const TextProperties& properties)
@@ -515,9 +562,11 @@ void Renderer2D::DrawText(const TextProperties& properties)
 		float h = g.Size.y * properties.scale.y;
 
 		QuadProperties qp;
-		qp.texture = g.Texture;
-		qp.argb = properties.argb;
-		qp.uv = { 0,1,1,0 };
+		qp.texture = font.AtlasTexture;
+		qp.uv = {
+			g.UV0.x, g.UV1.y,
+			g.UV1.x, g.UV0.y
+		};
 		qp.isText = true;
 		qp.transform = cass::Matrix4<float>().translate({ x,y,0 }).scale({ w,h,1 });
 
