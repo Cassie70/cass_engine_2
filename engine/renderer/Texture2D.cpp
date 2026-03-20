@@ -4,7 +4,7 @@
 #include <stb_image.h>
 #include <iostream>
 
-Texture2D::Texture2D(const std::string& path)
+Texture2D::Texture2D(const std::string& path, const Texture2DParams &params)
 {
     int width, height, channels;
 
@@ -22,11 +22,15 @@ Texture2D::Texture2D(const std::string& path)
     glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
     glTextureStorage2D(m_RendererID, 1, GL_RGBA8, m_Width, m_Height);
 
-    glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    // 👉 Filtros
+    glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, params.MinFilter);
+    glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, params.MagFilter);
 
+    // 👉 Wrapping
+    glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_S, params.WrapS);
+    glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_T, params.WrapT);
+
+    // 👉 Subir imagen
     glTextureSubImage2D(
         m_RendererID,
         0,
@@ -37,8 +41,11 @@ Texture2D::Texture2D(const std::string& path)
         data
     );
 
-    stbi_image_free(data);
+    // 👉 Mipmaps opcionales
+    if (params.GenerateMipmaps)
+        glGenerateTextureMipmap(m_RendererID);
 
+    stbi_image_free(data);
 }
 
 Texture2D::Texture2D(uint32_t width, uint32_t height, const unsigned char* data)

@@ -1,7 +1,7 @@
 #include "SpriteSheet.hpp"
 struct SpriteAnimation
 {
-    std::vector<int> frames;
+    std::vector<cass::Vector2<int>> frames;
     float frameTime;
 
     int currentFrame = 0;
@@ -19,21 +19,11 @@ struct SpriteAnimation
 
     cass::Vector4<float> GetUV(const SpriteSheet& sheet) const
     {
-        int frameIndex = frames[currentFrame];
+        const auto& frame = frames[currentFrame];
 
-        int col = frameIndex % sheet.cols;
-        int row = frameIndex / sheet.cols;
+        int col = frame.x;
+        int row = frame.y;
 
-        float spriteW = 1.0f / sheet.cols;
-        float spriteH = 1.0f / sheet.rows;
-
-        // Considerando offsets y padding
-        float u0 = sheet.offsetX + col * (spriteW + sheet.paddingX);
-        float v0 = sheet.offsetY + row * (spriteH + sheet.paddingY);
-
-        float u1 = u0 + spriteW;
-        float v1 = v0 + spriteH;
-
-        return { u0, v0, u1, v1 };
+        return sheet.GetUV(row, col);
     }
 };

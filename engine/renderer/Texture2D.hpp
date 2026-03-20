@@ -2,12 +2,24 @@
 
 #include <string>
 #include <cstdint>
+#include <glad/glad.h>
 
 class Renderer2D; // forward declaration
 
+struct Texture2DParams
+{
+    GLint MinFilter = GL_NEAREST;     // Cómo se ve cuando la textura se hace pequeña
+    GLint MagFilter = GL_NEAREST;    // Cómo se ve cuando se agranda
+
+    GLint WrapS = GL_REPEAT;         // Repetición horizontal (U / X)
+    GLint WrapT = GL_REPEAT;         // Repetición vertical (V / Y)
+
+    bool GenerateMipmaps = false;    // Si quieres mipmaps
+};
+
 class Texture2D {
 public:
-    Texture2D(const std::string& path);
+    Texture2D(const std::string& path, const Texture2DParams &params);
     Texture2D(uint32_t width, uint32_t height, const unsigned char* data);
     ~Texture2D();
 

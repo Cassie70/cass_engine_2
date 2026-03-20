@@ -13,6 +13,9 @@ namespace cass
         Vector2() : x(0), y(0) {}
         Vector2(T x, T y) : x(x), y(y) {}
 
+        template<typename U>
+        Vector2(const Vector2<U>& other) : x((T)other.x), y((T)other.y) {}
+
         Vector2 operator+(const Vector2 &v) const { return Vector2(x + v.x, y + v.y); }
         Vector2 operator+(const T &f) const { return Vector2(x + f, y + f); }
 		Vector2 operator-() const { return Vector2(-x, -y); }
@@ -58,11 +61,15 @@ namespace cass
         Vector3(T x, T y, T z) : x(x), y(y), z(z) {}
         Vector3(const Vector2<T> &v, T z) : x(v.x), y(v.y), z(z) {}
 
+        template<typename U>
+        Vector3(const Vector3<U>& other): x((T)other.x), y((T)other.y), z((T)other.z) {}
+
         Vector3 operator+(const Vector3& v) const { return Vector3(x + v.x, y + v.y, z + v.z); }
         Vector3 operator+(const T& f) const { return Vector3(x + f, y + f, z + f); }
         Vector3 operator-() const { return Vector3(-x, -y, -z); }
         Vector3 operator-(const Vector3& v) const { return Vector3(x - v.x, y - v.y, z - v.z); }
         Vector3 operator-(const T& f) const { return Vector3(x - f, y - f, z - f); }
+        Vector3 operator*(const T& f) const { return Vector3(x * f, y * f, z * f); }
 
         Vector3 operator+= (const Vector3 & v)
         {
@@ -105,6 +112,9 @@ namespace cass
         Vector4() : x(0), y(0), z(0), t(0) {}
         Vector4(T x, T y, T z, T t) : x(x), y(y), z(z), t(t) {}
         Vector4(const Vector3<T> &v, T t) : x(v.x), y(v.y), z(v.z), t(t) {}
+
+        template<typename U>
+        Vector4(const Vector4<U>& other) : x((T)other.x), y((T)other.y), z((T)other.z), t((T)other.t) {}
 
         Vector4 operator+(const Vector4 &v) const { return Vector4(x + v.x, y + v.y, z + v.z, t + v.t); }
         Vector4 operator+(const T &f) const { return Vector4(x + f, y + f, z + f, t + f); }

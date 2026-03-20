@@ -5,6 +5,7 @@
 class Application {
 private:
 	static Application* s_Instance;
+	float deltaTime;
 
 public:
 	Application(const WindowProperties& props);

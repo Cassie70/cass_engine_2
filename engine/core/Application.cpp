@@ -9,6 +9,7 @@ Application::Application(const WindowProperties& props)
 {
     s_Instance = this;
     m_Window = new Window(props);
+    deltaTime = 0;
     Renderer::Init();
     Renderer2D::Init();
 }
@@ -22,7 +23,7 @@ void Application::Run()
 {
     while (!m_Window->ShouldClose())
     {
-        float deltaTime = Time::GetDeltaTime();
+        deltaTime = Time::GetDeltaTime();
 
         Renderer::BeginFrame();
 
