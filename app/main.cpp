@@ -65,15 +65,14 @@ protected:
 
 		v3 newCameraPosition = m_Camera.GetPosition() + (v3(player.position, 0.0f) - m_Camera.GetPosition()) * 0.1f;
 
-
 		m_Camera.SetPosition(newCameraPosition);
 
 		Renderer2D::BeginScene(m_Camera);
-		tileManager.draw();
+		tileManager.draw(m_Camera.GetPosition(), screenCols, screenRows);
 		player.draw();
 		Renderer2D::EndScene();
 
-		showInfo(deltaTime);
+		//showInfo(deltaTime);
 	}
 
 

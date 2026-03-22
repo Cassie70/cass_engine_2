@@ -63,18 +63,26 @@ public:
         createTiles();
         readTileMap(atlasMapPath);
     }
-    void draw() { 
+    void draw(cass::Vector3<float> cameraPosition, int screenCols, int screenRows) {
         for (int i = 0; i < mapTile.size(); i++) {
             for (int j = 0; j < mapTile[i].size(); j++) {
 
+                float y = mapTile.size() - i - 1;
+
+                if (j > cameraPosition.x + (screenCols/2 + 1) || j < cameraPosition.x - (screenCols / 2 + 1) ||
+                    y > cameraPosition.y + (screenRows/2 + 1) || y < cameraPosition.y - (screenRows / 2 + 1)) {
+                    continue;
+                }
+
                 uint8_t tileID = mapTile[i][j];
 
-                Renderer2D::DrawSprite({ 
-                    .position = cass::Vector2<float>(j,mapTile.size() - i - 1),
-                    .size = {1,1}, 
-                    .texture = &atlasTexture, 
-                    .uv = tiles[tileID].uvs });
-            } 
-        } 
+                Renderer2D::DrawSprite({
+                    .position = cass::Vector2<float>(j, y),
+                    .size = {1,1},
+                    .texture = &atlasTexture,
+                    .uv = tiles[tileID].uvs
+                    });
+            }
+        }
     }
 };
