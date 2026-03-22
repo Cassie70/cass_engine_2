@@ -7,12 +7,16 @@
 #include <Input.hpp>
 #include "SpriteAnimation.hpp"
 #include "Player.hpp"
+#include "TileManager.hpp"
 
 const int originalTileSize = 16;
-const int scale = 3;
+const int scale = 4;
 const int tileSize = originalTileSize * scale;
 const int screenCols = 16;
 const int screenRows = 12;
+
+using v3 = cass::Vector3<float>;
+
 
 class SandBox : public Application {
 private:
@@ -25,14 +29,21 @@ private:
 	float frameDt = 0;
 
 	Player player;
-
+	TileManager tileManager;
 
 public:
 	SandBox(const WindowProperties& props) : 
 		Application(props), 
-		m_Camera(0.0f, props.Width / tileSize, 0.0f, props.Height / tileSize), 
-		props(props) 
+		m_Camera(
+			-(props.Width / static_cast<float>(tileSize)) * 0.5f,
+			(props.Width / static_cast<float>(tileSize)) * 0.5f,
+			-(props.Height / static_cast<float>(tileSize)) * 0.5f,
+			(props.Height / static_cast<float>(tileSize)) * 0.5f
+		),
+		props(props),
+		tileManager("assets/atlas.png", "assets/level1.txt")
 	{
+		m_Camera.SetPosition({ player.position,0.0f });
 		Renderer::SetClearColor(0xFE9494FC);
 	}
 
@@ -52,7 +63,13 @@ protected:
 			accumulator -= fixedDt;
 		}
 
+		v3 newCameraPosition = m_Camera.GetPosition() + (v3(player.position, 0.0f) - m_Camera.GetPosition()) * 0.1f;
+
+
+		m_Camera.SetPosition(newCameraPosition);
+
 		Renderer2D::BeginScene(m_Camera);
+		tileManager.draw();
 		player.draw();
 		Renderer2D::EndScene();
 

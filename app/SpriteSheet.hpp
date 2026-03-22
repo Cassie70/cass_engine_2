@@ -1,45 +1,48 @@
+#pragma once
+
+struct SpriteSheetParams {
+    int textureWidth = 0;
+    int textureHeight = 0;
+    int spriteWidth = 0;
+    int spriteHeight = 0;
+    int rows = 0;
+    int cols = 0;
+    cass::Vector2<int> spacing = { 0, 0 };
+    cass::Vector2<int> offset = { 0, 0 };
+};
+
 class SpriteSheet
 {
+private:
+    int rows = 0;
+    int cols = 0;
+
+    cass::Vector2<float> spriteSizeUV{ 0.0f, 0.0f };
+    cass::Vector2<float> spacingUV{ 0.0f, 0.0f };
+    cass::Vector2<float> offsetUV{ 0.0f, 0.0f };
 public:
-    using Vec2 = cass::Vector2<float>;
-    using Vec2i = cass::Vector2<int>;
 
-    int rows{ 0 };
-    int cols{ 0 };
-
-    Vec2 spriteSizeUV{ 0.0f, 0.0f };
-    Vec2 spacingUV{ 0.0f, 0.0f };
-    Vec2 offsetUV{ 0.0f, 0.0f };
-
-    // 🔹 Constructor por defecto
     SpriteSheet() = default;
 
-    // 🔹 Constructor principal
-    SpriteSheet(
-        int textureWidth, int textureHeight,
-        int spriteWidth, int spriteHeight,
-        int rows, int cols,
-        Vec2i spacing = { 0, 0 },
-        Vec2i offset = { 0, 0 }
-    )
-        : rows(rows), cols(cols)
+    SpriteSheet(const SpriteSheetParams &params)
+        : rows(params.rows), cols(params.cols)
     {
-        const float invW = 1.0f / textureWidth;
-        const float invH = 1.0f / textureHeight;
+        const float invW = 1.0f / params.textureWidth;
+        const float invH = 1.0f / params.textureHeight;
 
         spriteSizeUV = {
-            spriteWidth * invW,
-            spriteHeight * invH
+            params.spriteWidth * invW,
+            params.spriteHeight * invH
         };
 
         spacingUV = {
-            spacing.x * invW,
-            spacing.y * invH
+            params.spacing.x * invW,
+            params.spacing.y * invH
         };
 
         offsetUV = {
-            offset.x * invW,
-            offset.y * invH
+            params.offset.x * invW,
+            params.offset.y * invH
         };
     }
 
