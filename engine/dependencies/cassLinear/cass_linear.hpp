@@ -2,6 +2,8 @@
 
 #include <iostream>
 #include <cmath>
+#include <string>
+#include <format>
 
 namespace cass
 {
@@ -45,10 +47,21 @@ namespace cass
             return Vector2(x * inv_m, y * inv_m);
         }
 
+        Vector2 SafeNormalize() const
+        {
+            if (x == 0 && y == 0) return Vector2(x, y);
+            T inv_m = 1 / magnitude();
+            return Vector2(x * inv_m, y * inv_m);
+        }
+
         friend std::ostream &operator<<(std::ostream &os, const Vector2 &v)
         {
             os << "(" << v.x << ", " << v.y << ")";
             return os;
+        }
+
+        std::string toString() const {
+            return std::format("({}, {})", x, y);
         }
     };
 

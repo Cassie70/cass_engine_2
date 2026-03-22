@@ -2,10 +2,7 @@
 #include "Renderer.hpp"
 #include <Renderer2D.hpp>
 #include "../engine/dependencies/glfw/include/GLFW/glfw3.h"
-#include <filesystem>
-#include <iostream>
 #include <Input.hpp>
-#include "SpriteAnimation.hpp"
 #include "Player.hpp"
 #include "TileManager.hpp"
 
@@ -21,6 +18,7 @@ using v3 = cass::Vector3<float>;
 class SandBox : public Application {
 private:
 	OrthographicCamera m_Camera;
+	OrthographicCamera ui_Camera;
 	WindowProperties props;
 
 	float m_TimeAccumulator = 0.0f;
@@ -40,11 +38,14 @@ public:
 			-(props.Height / static_cast<float>(tileSize)) * 0.5f,
 			(props.Height / static_cast<float>(tileSize)) * 0.5f
 		),
+		ui_Camera(0, props.Width,0, props.Height),
 		props(props),
 		tileManager("assets/atlas.png", "assets/level1.txt")
 	{
 		m_Camera.SetPosition({ player.position,0.0f });
 		Renderer::SetClearColor(0xFE9494FC);
+		Renderer2D::LoadFont("assets/arial.ttf", 16);
+
 	}
 
 protected:
@@ -70,6 +71,25 @@ protected:
 		Renderer2D::BeginScene(m_Camera);
 		tileManager.draw(m_Camera.GetPosition(), screenCols, screenRows);
 		player.draw();
+		Renderer2D::EndScene();
+
+		Renderer2D::BeginScene(ui_Camera);
+		Renderer2D::DrawText({
+			.fontKey = "assets/arial.ttf@16",
+			.text = player.velocity.toString(),
+			.position = {0,150},
+		});
+		Renderer2D::DrawText({
+			.fontKey = "assets/arial.ttf@16",
+			.text = player.direction.toString(),
+			.position = {0,100},
+		});
+
+		Renderer2D::DrawText({
+			.fontKey = "assets/arial.ttf@16",
+			.text = player.position.toString(),
+			.position = {0,50},
+			});
 		Renderer2D::EndScene();
 
 		//showInfo(deltaTime);

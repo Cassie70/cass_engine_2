@@ -2,6 +2,7 @@
 
 #include "Entity.hpp"
 #include "Renderer2D.hpp"
+#include "SpriteAnimation.hpp"
 #include "Input.hpp"
 
 enum class Direction
@@ -10,6 +11,8 @@ enum class Direction
 };
 
 class Player : public Entity {
+
+private:
 
 	Texture2D texture;
 	SpriteSheet playerSS;
@@ -20,13 +23,10 @@ class Player : public Entity {
 	SpriteAnimation walkRight;
 	SpriteAnimation walkUp;
 	SpriteAnimation walkDown;
-
-	cass::Vector2<int> direction;
 	Direction orientation;
 	bool walkLeft;
-
-	
 public:
+	cass::Vector2<int> direction;
 	Player(): texture("assets/diablito.png",{}) {
 
 		playerSS = SpriteSheetParams{
@@ -91,19 +91,19 @@ public:
 			currentAnim = &walkUp;
 			orientation = Direction::UP;
 		}
-		else if (Input::IsKeyPressed(GLFW_KEY_DOWN)) {
+		if (Input::IsKeyPressed(GLFW_KEY_DOWN)) {
 			direction.y -= 1;
 			currentAnim = &walkDown;
 			orientation = Direction::DOWN;
 		}
-		else if (Input::IsKeyPressed(GLFW_KEY_LEFT)) {
+		if (Input::IsKeyPressed(GLFW_KEY_LEFT)) {
 			direction.x -= 1;
 			currentAnim = &walkRight;
 			orientation = Direction::LEFT;
 			walkLeft = true;
 			
 		}
-		else if (Input::IsKeyPressed(GLFW_KEY_RIGHT)) {
+		if (Input::IsKeyPressed(GLFW_KEY_RIGHT)) {
 			direction.x += 1;
 			currentAnim = &walkRight;
 			walkLeft = false;
@@ -118,8 +118,7 @@ public:
 				case Direction::RIGHT:currentAnim = &rightIdle;break;
 			}
 		}
- 
-		velocity = cass::Vector2<float>(direction) * speed;
+		velocity = cass::Vector2<float>(direction).SafeNormalize() * speed;
 		position += velocity * deltaTime;
 
 		currentAnim->Update(deltaTime);

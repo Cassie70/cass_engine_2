@@ -533,7 +533,7 @@ void Renderer2D::LoadFont(const std::string& path, uint32_t size)
 	FT_Done_FreeType(ft);
 
 	std::cout << "[Renderer2D] Font atlas created: "
-		<< path << " @ " << size << "px\n";
+		<< path << "@" << size << "px\n";
 }
 
 void Renderer2D::DrawText(const TextProperties& properties)
