@@ -1,3 +1,6 @@
 [submodule "engine/dependencies/freetype"]
 	path = engine/dependencies/freetype
 	url = https://gitlab.freedesktop.org/freetype/freetype.git
+[submodule "engine/dependencies/glfw"]
+	path = engine/dependencies/glfw
+	url = https://github.com/glfw/glfw.git
