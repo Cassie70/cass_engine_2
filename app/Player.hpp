@@ -4,6 +4,7 @@
 #include "Renderer2D.hpp"
 #include "SpriteAnimation.hpp"
 #include "Input.hpp"
+#include "TileManager.hpp"
 
 enum class Direction
 {
@@ -25,8 +26,9 @@ private:
 	SpriteAnimation walkDown;
 	Direction orientation;
 	bool walkLeft;
+	float colliderSize;
+	float halfCollider;
 public:
-	cass::Vector2<int> direction;
 	Player(): texture("assets/diablito.png",{}) {
 
 		playerSS = SpriteSheetParams{
@@ -62,13 +64,12 @@ public:
 		walkDown = SpriteAnimationParams{
 			.frames = {{2,2}, {3,2}},
 			.frameTime = 1.0f / 6.0f
-		},
+		};
 
 		walkUp = SpriteAnimationParams{
-				.frames = {{2,0}, {3,0}},
-				.frameTime = 1.0f / 6.0f
-		},
-
+			.frames = {{2,0}, {3,0}},
+			.frameTime = 1.0f / 6.0f
+		};
 
 		currentAnim = &frontIdle;
 		setDefaultValues();
@@ -78,10 +79,12 @@ public:
 		direction = { 0,0 };
 		position = { 8,6 };
 		speed = 6;
+		colliderSize = 0.5f;
+		halfCollider = colliderSize / 2.0f;
 		orientation = Direction::DOWN;
 	}
 
-	void handleInput(float deltaTime) {
+	void handleInput() {
 
 		direction = { 0, 0 };
 		
@@ -119,11 +122,63 @@ public:
 			}
 		}
 		velocity = cass::Vector2<float>(direction).SafeNormalize() * speed;
-		position += velocity * deltaTime;
+	}
+
+	void update(float deltaTime, TileManager &tileManager) {
+		const float EPS = 0.001f;
+		cass::Vector2<float> nextPosition = position;
+		nextPosition.x += velocity.x * deltaTime;
+		{
+			int left = (int)floor(nextPosition.x - halfCollider);
+			int right = (int)floor(nextPosition.x + halfCollider);
+			int bottom = (int)floor(position.y - halfCollider);
+			int top = (int)floor(position.y + halfCollider);
+			
+			for (int y = bottom; y <= top; y++) {
+				if (velocity.x > 0) {
+					if (tileManager.IsSolid(right, y)) {
+						nextPosition.x = right - halfCollider - EPS;
+						break;
+					}
+				}
+				else if (velocity.x < 0) {
+					if (tileManager.IsSolid(left, y)) {
+						nextPosition.x = left + 1 + halfCollider + EPS;
+						break;
+					}
+				}
+			}
+		}
+
+		position.x = nextPosition.x;
+
+		nextPosition.y += velocity.y * deltaTime;
+
+		{
+			int left = (int)floor(position.x - halfCollider);
+			int right = (int)floor(position.x + halfCollider);
+			int bottom = (int)floor(nextPosition.y - halfCollider);
+			int top = (int)floor(nextPosition.y + halfCollider);
+
+			for (int x = left; x <= right; x++) {
+				if (velocity.y > 0) {
+					if (tileManager.IsSolid(x, top)) {
+						nextPosition.y = top - halfCollider - EPS;
+						break;
+					}
+				}
+				else if (velocity.y < 0) {
+					if (tileManager.IsSolid(x, bottom)) {
+						nextPosition.y = bottom + 1 + halfCollider + EPS;
+						break;
+					}
+				}
+			}
+		}
+
+		position.y = nextPosition.y;
 
 		currentAnim->Update(deltaTime);
-
-
 	}
 
 	void draw() {
@@ -134,6 +189,10 @@ public:
 			.uv = currentAnim->GetUV(playerSS),
 			.origin = {0.5,0.5},
 			.flipX = walkLeft,
+		});
+		Renderer2D::DrawQuad({
+			.transform = cass::Matrix4<float>().translate(position).scale(colliderSize),
+			.origin = {0.5,0.5},
 		});
 	}
 };

@@ -7,15 +7,17 @@
 #include <fstream>
 #include <string>
 class TileManager {
+public:
+    std::vector<std::vector<uint8_t>> mapTile;
 private:
     Tile tiles[16];
     SpriteSheet atlas;
     Texture2D atlasTexture;
-    std::vector<std::vector<uint8_t>> mapTile;
+    
 
     void createTiles() { 
         tiles[0] = Tile{ false, atlas.GetUV(0,0) }; 
-        tiles[1] = Tile{ false, atlas.GetUV(0,1) };
+        tiles[1] = Tile{ true, atlas.GetUV(0,1) };
     }
 
     void readTileMap(const std::string& path) {
@@ -85,5 +87,15 @@ public:
                     });
             }
         }
+    }
+
+    bool IsSolid(int x, int y) {
+        int mapY = mapTile.size() - y - 1;
+
+        if (mapY < 0 || mapY >= mapTile.size()) return false;
+        if (x < 0 || x >= mapTile[mapY].size()) return false;
+
+        uint8_t id = mapTile[mapY][x];
+        return tiles[id].collisionable;
     }
 };

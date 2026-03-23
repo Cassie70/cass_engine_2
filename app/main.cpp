@@ -51,18 +51,8 @@ public:
 protected:
 	void OnUpdate(float deltaTime) override {
 
-		const float fixedDt = 1.0f / 60.0f;
-
-		accumulator += deltaTime;
-
-		player.handleInput(deltaTime);
-
-		while (accumulator >= fixedDt)
-		{
-
-
-			accumulator -= fixedDt;
-		}
+		player.handleInput();
+		player.update(deltaTime, tileManager);
 
 		v3 newCameraPosition = m_Camera.GetPosition() + (v3(player.position, 0.0f) - m_Camera.GetPosition()) * 0.1f;
 
