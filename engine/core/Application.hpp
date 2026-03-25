@@ -16,6 +16,7 @@ public:
 	inline Window& GetWindow() { return *m_Window; }
 
 protected:
+	void SetClearColor(const uint32_t argb);
 	virtual void OnUpdate(float deltaTime){}
     Window* m_Window;
 };

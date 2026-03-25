@@ -1,10 +1,11 @@
 #pragma once
 
+#include <Renderer2D.hpp>
+#include <Input.hpp>
 #include "Entity.hpp"
-#include "Renderer2D.hpp"
 #include "SpriteAnimation.hpp"
-#include "Input.hpp"
 #include "TileManager.hpp"
+#include "../engine/dependencies/glfw/include/GLFW/glfw3.h"
 
 enum class Direction
 {
@@ -121,6 +122,7 @@ public:
 				case Direction::RIGHT:currentAnim = &rightIdle;break;
 			}
 		}
+
 		velocity = cass::Vector2<float>(direction).SafeNormalize() * speed;
 	}
 
@@ -190,9 +192,11 @@ public:
 			.origin = {0.5,0.5},
 			.flipX = walkLeft,
 		});
+		/*
 		Renderer2D::DrawQuad({
 			.transform = cass::Matrix4<float>().translate(position).scale(colliderSize),
 			.origin = {0.5,0.5},
 		});
+		*/
 	}
 };

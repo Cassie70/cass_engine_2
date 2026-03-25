@@ -6,6 +6,7 @@
 #include <filesystem>
 #include <fstream>
 #include <string>
+
 class TileManager {
 public:
     std::vector<std::vector<uint8_t>> mapTile;

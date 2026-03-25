@@ -1,8 +1,5 @@
-#include "Application.hpp"
-#include "Renderer.hpp"
+#include <Application.hpp>
 #include <Renderer2D.hpp>
-#include "../engine/dependencies/glfw/include/GLFW/glfw3.h"
-#include <Input.hpp>
 #include "Player.hpp"
 #include "TileManager.hpp"
 
@@ -43,7 +40,7 @@ public:
 		tileManager("assets/atlas.png", "assets/level1.txt")
 	{
 		m_Camera.SetPosition({ player.position,0.0f });
-		Renderer::SetClearColor(0xFE9494FC);
+		Application::SetClearColor(0xFFFFFFFF);
 		Renderer2D::LoadFont("assets/arial.ttf", 16);
 
 	}
@@ -82,7 +79,7 @@ protected:
 			});
 		Renderer2D::EndScene();
 
-		//showInfo(deltaTime);
+		showInfo(deltaTime);
 	}
 
 

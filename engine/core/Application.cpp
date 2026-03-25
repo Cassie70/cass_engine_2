@@ -34,3 +34,8 @@ void Application::Run()
     }
 }
 
+void Application::SetClearColor(const uint32_t argb)
+{
+    Renderer::SetClearColor(argb);
+}
+
