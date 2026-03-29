@@ -2,6 +2,8 @@
 #include <Renderer2D.hpp>
 #include "Player.hpp"
 #include "TileManager.hpp"
+#include <FontManager.hpp>
+
 
 const int originalTileSize = 16;
 const int scale = 4;
@@ -26,6 +28,8 @@ private:
 	Player player;
 	TileManager tileManager;
 
+	uint32_t arial24;
+
 public:
 	SandBox(const WindowProperties& props) : 
 		Application(props), 
@@ -41,7 +45,8 @@ public:
 	{
 		m_Camera.SetPosition({ player.position,0.0f });
 		Application::SetClearColor(0xFF000000);
-		Renderer2D::LoadFont("assets/arial.ttf", 16);
+		FontManager::Init();
+		arial24 = FontManager::Load("assets/arial.ttf", 24);
 
 	}
 
@@ -59,21 +64,21 @@ protected:
 		tileManager.draw(m_Camera.GetPosition(), screenCols, screenRows);
 		player.draw();
 		Renderer2D::EndScene();
-		
+
 		Renderer2D::BeginScene(ui_Camera);
 		Renderer2D::DrawText({
-			.fontKey = "assets/arial.ttf@16",
+			.font = arial24,
 			.text = player.velocity.toString(),
 			.position = {0,150},
 		});
 		Renderer2D::DrawText({
-			.fontKey = "assets/arial.ttf@16",
+			.font = arial24,
 			.text = player.direction.toString(),
 			.position = {0,100},
 		});
 
 		Renderer2D::DrawText({
-			.fontKey = "assets/arial.ttf@16",
+			.font = arial24,
 			.text = player.position.toString(),
 			.position = {0,50},
 		});

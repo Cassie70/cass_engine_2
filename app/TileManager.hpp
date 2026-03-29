@@ -17,9 +17,9 @@ private:
     
 
     void createTiles() { 
-        tiles[0] = Tile{ false, atlas.GetUV(0,0) }; 
-        tiles[1] = Tile{ false, atlas.GetUV(0,1) };
-        tiles[2] = Tile{ true, atlas.GetUV(0,2) };
+        tiles[0] = Tile{ false, atlas.GetUV(1,0) }; 
+        tiles[1] = Tile{ false, atlas.GetUV(1,1) };
+        tiles[2] = Tile{ true, atlas.GetUV(1,2) };
     }
 
     void readTileMap(const std::string& path) {

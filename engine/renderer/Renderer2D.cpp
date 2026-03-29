@@ -2,8 +2,7 @@
 #include <glad/glad.h>
 #include <array>
 #include <vector>
-
-std::unordered_map<std::string, Font> Renderer2D::s_Fonts;
+#include "FontManager.hpp"
 
 struct QuadVertex {
 	cass::Vector3<float> Position;
@@ -411,147 +410,15 @@ void Renderer2D::DrawSprite(const SpriteProperties& properties)
 		});
 }
 
-void Renderer2D::LoadFont(const std::string& path, uint32_t size)
-{
-	std::string key = path + "@" + std::to_string(size);
-
-	if (s_Fonts.find(key) != s_Fonts.end()) {
-		std::cout << "[Renderer2D] Font already loaded: " << key << "\n";
-		return;
-	}
-
-	FT_Library ft;
-	if (FT_Init_FreeType(&ft)) {
-		std::cout << "[Renderer2D] ERROR: FreeType init failed\n";
-		return;
-	}
-
-	FT_Face face;
-	if (FT_New_Face(ft, path.c_str(), 0, &face)) {
-		std::cout << "[Renderer2D] ERROR: Failed to load font: " << path << "\n";
-		FT_Done_FreeType(ft);
-		return;
-	}
-
-	FT_Set_Pixel_Sizes(face, 0, size);
-
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-
-	// ===============================
-	// Atlas settings
-	// ===============================
-
-	const uint32_t ATLAS_WIDTH = 1024;
-	const uint32_t ATLAS_HEIGHT = 1024;
-	const uint32_t PADDING = 1;
-
-	std::vector<unsigned char> atlasBuffer(
-		ATLAS_WIDTH * ATLAS_HEIGHT,
-		0
-	);
-
-	uint32_t x = 0;
-	uint32_t y = 0;
-	uint32_t rowHeight = 0;
-
-	Font font;
-
-	font.LineHeight = (float)(face->size->metrics.height >> 6);
-
-	// ===============================
-	// Pack glyphs
-	// ===============================
-
-	for (unsigned char c = 0; c < 128; c++)
-	{
-		if (FT_Load_Char(face, c, FT_LOAD_RENDER)) {
-			std::cout << "[Renderer2D] Warning: Failed glyph '" << c << "'\n";
-			continue;
-		}
-
-		FT_GlyphSlot g = face->glyph;
-
-		// New row if needed
-		if (x + g->bitmap.width + PADDING >= ATLAS_WIDTH) {
-			x = 0;
-			y += rowHeight + PADDING;
-			rowHeight = 0;
-		}
-
-		if (y + g->bitmap.rows >= ATLAS_HEIGHT) {
-			std::cout << "[Renderer2D] ERROR: Font atlas overflow!\n";
-			break;
-		}
-
-		// Copy bitmap into atlas buffer
-		for (uint32_t row = 0; row < g->bitmap.rows; row++)
-		{
-			memcpy(
-				&atlasBuffer[(x + (y + row) * ATLAS_WIDTH)],
-				&g->bitmap.buffer[row * g->bitmap.width],
-				g->bitmap.width
-			);
-		}
-
-		FTGlyph glyph;
-
-		glyph.Size = { (float)g->bitmap.width, (float)g->bitmap.rows };
-		glyph.Bearing = { (float)g->bitmap_left, (float)g->bitmap_top };
-		glyph.Advance = (float)(g->advance.x >> 6);
-
-		glyph.UV0 = {
-			(float)x / ATLAS_WIDTH,
-			(float)y / ATLAS_HEIGHT
-		};
-
-		glyph.UV1 = {
-			(float)(x + g->bitmap.width) / ATLAS_WIDTH,
-			(float)(y + g->bitmap.rows) / ATLAS_HEIGHT
-		};
-
-		font.Glyphs[c] = glyph;
-
-		x += g->bitmap.width + PADDING;
-		rowHeight = std::max(rowHeight, g->bitmap.rows);
-	}
-
-	// ===============================
-	// Create atlas texture
-	// ===============================
-
-	font.AtlasTexture = new Texture2D(
-		ATLAS_WIDTH,
-		ATLAS_HEIGHT,
-		atlasBuffer.data()
-	);
-
-	s_Fonts[key] = font;
-
-	FT_Done_Face(face);
-	FT_Done_FreeType(ft);
-
-	std::cout << "[Renderer2D] Font atlas created: "
-		<< path << "@" << size << "px\n";
-}
-
 void Renderer2D::DrawText(const TextProperties& properties)
 {
-	if (s_Fonts.find(properties.fontKey) == s_Fonts.end())
-	{
-		std::cout << "Font not found: " << properties.fontKey << "\n";
-		return;
-	}
+	Font* font = FontManager::Get(properties.font);
 
-	Font& font = s_Fonts[properties.fontKey];
-
-	cass::Vector2<float> cursor = properties.position;
+	auto cursor = properties.position;
 
 	for (char c : properties.text)
 	{
-		if (font.Glyphs.find(c) == font.Glyphs.end())
-			continue;
-
-		FTGlyph& g = font.Glyphs[c];
+		FTGlyph& g = font->Glyphs[(uint8_t)c];
 
 		float x = cursor.x + g.Bearing.x * properties.scale.x;
 		float y = cursor.y - (g.Size.y - g.Bearing.y) * properties.scale.y;
@@ -559,16 +426,12 @@ void Renderer2D::DrawText(const TextProperties& properties)
 		float w = g.Size.x * properties.scale.x;
 		float h = g.Size.y * properties.scale.y;
 
-		QuadProperties qp;
-		qp.texture = font.AtlasTexture;
-		qp.uv = {
-			g.UV0.x, g.UV1.y,
-			g.UV1.x, g.UV0.y
-		};
-		qp.isText = true;
-		qp.transform = cass::Matrix4<float>().translate({ x,y,0 }).scale({ w,h,1 });
-
-		DrawQuad(qp);
+		DrawQuad({
+			.transform = cass::Matrix4<float>().translate({ x,y,0 }).scale({ w,h,1 }),
+			.texture = font->atlas.get(),
+			.uv = { g.UV0.x, g.UV1.y, g.UV1.x, g.UV0.y },
+			.isText = true,
+			});
 
 		cursor.x += g.Advance * properties.scale.x;
 	}

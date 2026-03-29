@@ -2,24 +2,6 @@
 #include <cass_linear.hpp>
 #include "Texture2D.hpp"
 #include <camera/OrthographicCamera.hpp>
-#include <unordered_map>
-#include <ft2build.h>
-#include FT_FREETYPE_H
-
-struct FTGlyph {
-	cass::Vector2<float> Size;
-	cass::Vector2<float> Bearing;
-	float Advance;
-
-	cass::Vector2<float> UV0;
-	cass::Vector2<float> UV1;
-};
-
-struct Font {
-	Texture2D* AtlasTexture;
-	std::unordered_map<char, FTGlyph> Glyphs;
-	float LineHeight;
-};
 
 struct Renderer2DStats {
 	uint32_t DrawCalls = 0;
@@ -75,7 +57,7 @@ struct SpriteProperties {
 };
 
 struct TextProperties {
-	const std::string& fontKey;
+	const uint32_t font;
 	const std::string& text;
 	cass::Vector2<float> position;
 	cass::Vector2<float> scale = { 1.0f,1.0f };
@@ -85,8 +67,6 @@ struct TextProperties {
 
 class Renderer2D {
 public:
-	static std::unordered_map<std::string, Font> s_Fonts;
-
 	static const Renderer2DStats& GetStats();
 	static void ResetStats();
 	static void Init();
@@ -99,6 +79,5 @@ public:
 	static void DrawPolarLine(const PolarLineProperties &properties);
 	static void DrawCircle(const CircleProperties &properties);
 	static void DrawSprite(const SpriteProperties& properties);
-	static void LoadFont(const std::string& path, uint32_t size);
 	static void DrawText(const TextProperties &properties);
 };

@@ -10,11 +10,16 @@ add_library(engine STATIC
     "renderer/Renderer.cpp"
     "core/Time.cpp" 
     "renderer/Renderer2D.cpp"
- "renderer/camera/OrthographicCamera.cpp" "renderer/Texture2D.cpp" "input/Input.cpp")
+    "renderer/camera/OrthographicCamera.cpp" 
+    "renderer/Texture2D.cpp" 
+    "input/Input.cpp" 
+    "resources/FontManager.cpp"
+)
 
 target_include_directories(engine PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/core
     ${CMAKE_CURRENT_SOURCE_DIR}/renderer
+    ${CMAKE_CURRENT_SOURCE_DIR}/resources
     ${CMAKE_CURRENT_SOURCE_DIR}/input
     ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/cassLinear
     ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/stb
