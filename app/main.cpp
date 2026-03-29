@@ -40,7 +40,7 @@ public:
 		tileManager("assets/atlas.png", "assets/level1.txt")
 	{
 		m_Camera.SetPosition({ player.position,0.0f });
-		Application::SetClearColor(0xFFFFFFFF);
+		Application::SetClearColor(0xFF000000);
 		Renderer2D::LoadFont("assets/arial.ttf", 16);
 
 	}
@@ -59,7 +59,7 @@ protected:
 		tileManager.draw(m_Camera.GetPosition(), screenCols, screenRows);
 		player.draw();
 		Renderer2D::EndScene();
-
+		
 		Renderer2D::BeginScene(ui_Camera);
 		Renderer2D::DrawText({
 			.fontKey = "assets/arial.ttf@16",
@@ -76,9 +76,9 @@ protected:
 			.fontKey = "assets/arial.ttf@16",
 			.text = player.position.toString(),
 			.position = {0,50},
-			});
+		});
 		Renderer2D::EndScene();
-
+		
 		showInfo(deltaTime);
 	}
 

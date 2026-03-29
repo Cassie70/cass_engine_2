@@ -257,8 +257,6 @@ void Renderer2D::BeginScene(const OrthographicCamera& camera) {
 	s_Data.IndexCount = 0;
 	s_Data.VertexBufferPtr = s_Data.VertexBufferBase;
 	s_Data.TextureSlotIndex = 1;
-
-	s_Data.Stats = {};
 }
 void Renderer2D::EndScene()
 {

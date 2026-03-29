@@ -26,9 +26,8 @@ void Application::Run()
         deltaTime = Time::GetDeltaTime();
 
         Renderer::BeginFrame();
-
+        Renderer2D::ResetStats();
         OnUpdate(deltaTime);
-
         Renderer::EndFrame();
         m_Window->Update();
     }

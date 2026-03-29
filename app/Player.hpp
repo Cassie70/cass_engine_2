@@ -3,6 +3,7 @@
 #include <Renderer2D.hpp>
 #include <Input.hpp>
 #include "Entity.hpp"
+#include "SpriteSheet.hpp"
 #include "SpriteAnimation.hpp"
 #include "TileManager.hpp"
 #include "../engine/dependencies/glfw/include/GLFW/glfw3.h"

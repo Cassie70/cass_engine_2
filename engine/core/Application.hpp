@@ -1,5 +1,4 @@
 #pragma once
-#include "WindowProperties.hpp"
 #include <Window.hpp>
 
 class Application {

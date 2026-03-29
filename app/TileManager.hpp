@@ -18,7 +18,8 @@ private:
 
     void createTiles() { 
         tiles[0] = Tile{ false, atlas.GetUV(0,0) }; 
-        tiles[1] = Tile{ true, atlas.GetUV(0,1) };
+        tiles[1] = Tile{ false, atlas.GetUV(0,1) };
+        tiles[2] = Tile{ true, atlas.GetUV(0,2) };
     }
 
     void readTileMap(const std::string& path) {
@@ -61,7 +62,7 @@ public:
             .spriteWidth = 16,
             .spriteHeight = 16,
             .rows = 1,
-            .cols = 2
+            .cols = 3
             };
 
         createTiles();

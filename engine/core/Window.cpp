@@ -1,8 +1,6 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-
 #include <iostream>
-#include "WindowProperties.hpp"
 #include "Window.hpp"
 
 Window::Window(const WindowProperties& props)
