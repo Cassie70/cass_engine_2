@@ -3,7 +3,7 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include <cass_linear.hpp>
-#include <Texture2D.hpp>
+#include "Texture2D.hpp"
 
 struct FTGlyph {
 	cass::Vector2<float> Size;

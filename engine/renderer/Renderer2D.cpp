@@ -287,19 +287,21 @@ void Renderer2D::EndScene()
 
 void Renderer2D::DrawQuad(const QuadProperties& properties) {
 
+	auto& data = s_Data;
+
+	if (data.IndexCount >= data.MaxIndices ||
+		data.TextureSlotIndex >= data.MaxTextureSlots)
+	{
+		EndScene();
+		data.IndexCount = 0;
+		data.VertexBufferPtr = data.VertexBufferBase;
+		data.TextureSlotIndex = 1;
+	}
+
 	Texture2D* texture = properties.texture
 		? properties.texture
 		: s_Data.TextureSlots[0];
 
-	if (s_Data.IndexCount >= s_Data.MaxIndices)
-		EndScene(); // flush (batch lleno)
-
-	if (s_Data.TextureSlotIndex >= s_Data.MaxTextureSlots) {
-		EndScene();
-		s_Data.IndexCount = 0;
-		s_Data.VertexBufferPtr = s_Data.VertexBufferBase;
-		s_Data.TextureSlotIndex = 1;
-	}
 
 	float textureIndex = 0.0f;
 

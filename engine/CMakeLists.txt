@@ -11,7 +11,7 @@ add_library(engine STATIC
     "core/Time.cpp" 
     "renderer/Renderer2D.cpp"
     "renderer/camera/OrthographicCamera.cpp" 
-    "renderer/Texture2D.cpp" 
+    "resources/Texture2D.cpp" 
     "input/Input.cpp" 
     "resources/FontManager.cpp"
 )
