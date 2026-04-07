@@ -109,6 +109,13 @@ namespace cass
             return Vector3(x * inv_m, y * inv_m, z * inv_m);
         }
 
+        Vector3 SafeNormalize() const
+        {
+            if (x == 0 && y == 0 && z == 0) return Vector3(x, y, z);
+            T inv_m = 1 / magnitude();
+            return Vector3(x * inv_m, y * inv_m, z * inv_m);
+        }
+
         friend std::ostream &operator<<(std::ostream &os, const Vector3 &v)
         {
             os << "(" << v.x << ", " << v.y << ", " << v.z << ")";

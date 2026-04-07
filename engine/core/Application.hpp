@@ -1,5 +1,6 @@
 #pragma once
 #include <Window.hpp>
+#include <Event.hpp>
 
 class Application {
 private:
@@ -16,6 +17,7 @@ public:
 
 protected:
 	void SetClearColor(const uint32_t argb);
+	virtual void OnEvent(Event& e) {}
 	virtual void OnUpdate(float deltaTime){}
     Window* m_Window;
 };

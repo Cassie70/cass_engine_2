@@ -2,6 +2,7 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 #include "Window.hpp"
+#include <KeyEvent.hpp>
 
 Window::Window(const WindowProperties& props)
 {
@@ -70,6 +71,7 @@ void Window::Init(const WindowProperties& props)
     }
 
     glfwMakeContextCurrent((GLFWwindow*)m_Window);
+    glfwSetWindowUserPointer((GLFWwindow*)m_Window, this);
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
@@ -80,6 +82,21 @@ void Window::Init(const WindowProperties& props)
     SetVSync(m_VSync);
 
     glViewport(0, 0, m_Width, m_Height);
+
+    glfwSetKeyCallback((GLFWwindow*)m_Window,
+        [](GLFWwindow* window, int key, int scancode, int action, int mods) {
+
+            Window* win = (Window*)glfwGetWindowUserPointer(window);
+
+            if (action == GLFW_PRESS) {
+                KeyPressedEvent e(key);
+                win->m_EventCallback(e);
+            }
+            else if (action == GLFW_RELEASE) {
+                KeyReleasedEvent e(key);
+                win->m_EventCallback(e);
+            }
+        });
 
     std::cout << "Renderer: " << glGetString(GL_RENDERER) << "\n";
     std::cout << "OpenGL: " << glGetString(GL_VERSION) << "\n";
@@ -95,6 +112,50 @@ void Window::Update()
 {
     glfwSwapBuffers((GLFWwindow*)m_Window);
     glfwPollEvents();
+}
+
+void Window::ToggleFullscreen()
+{
+    GLFWwindow* window = (GLFWwindow*)m_Window;
+
+    m_Fullscreen = !m_Fullscreen;
+
+    if (m_Fullscreen)
+    {
+        // Guardar estado actual
+        glfwGetWindowPos(window, &m_WindowPosX, &m_WindowPosY);
+        glfwGetWindowSize(window, &m_WindowWidth, &m_WindowHeight);
+
+        GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+        const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+
+        glfwSetWindowMonitor(
+            window,
+            monitor,
+            0, 0,
+            mode->width,
+            mode->height,
+            mode->refreshRate
+        );
+
+        m_Width = mode->width;
+        m_Height = mode->height;
+    }
+    else
+    {
+        glfwSetWindowMonitor(
+            window,
+            nullptr,
+            m_WindowPosX,
+            m_WindowPosY,
+            m_WindowWidth,
+            m_WindowHeight,
+            0
+        );
+
+        m_Width = m_WindowWidth;
+        m_Height = m_WindowHeight;
+    }
 }
 
 void Window::SetVSync(bool enabled)

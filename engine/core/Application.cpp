@@ -9,6 +9,11 @@ Application::Application(const WindowProperties& props)
 {
     s_Instance = this;
     m_Window = new Window(props);
+    m_Window->SetEventCallback(
+        [this](Event& e) {
+            this->OnEvent(e);
+        }
+    );
     deltaTime = 0;
     Renderer::Init();
     Renderer2D::Init();
