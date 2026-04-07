@@ -2,6 +2,6 @@
 #include <memory>
 
 struct Tile {
-    bool collisionable;
+    bool collisionable = false;
     cass::Vector4<float> uvs;
 };

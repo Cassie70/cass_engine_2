@@ -12,8 +12,7 @@ class SpriteAnimation
 {
 private:
     std::vector<cass::Vector2<int>> frames;
-    float frameTime;
-
+    float frameTime = 0;
     int currentFrame = 0;
     float timer = 0;
 

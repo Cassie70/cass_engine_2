@@ -30,6 +30,21 @@ void Window::Init(const WindowProperties& props)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
+    glfwWindowHint(GLFW_RESIZABLE, props.Resizable ? GLFW_TRUE : GLFW_FALSE);
+    glfwWindowHint(GLFW_DECORATED, props.Decorated ? GLFW_TRUE : GLFW_FALSE);
+    glfwWindowHint(GLFW_MAXIMIZED, props.Maximized ? GLFW_TRUE : GLFW_FALSE);
+
+    GLFWmonitor* monitor = nullptr;
+
+    if (props.Fullscreen)
+    {
+        monitor = glfwGetPrimaryMonitor();
+        const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+
+        m_Width = mode->width;
+        m_Height = mode->height;
+    }
+
 #ifdef __APPLE__
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
@@ -38,9 +53,14 @@ void Window::Init(const WindowProperties& props)
         m_Width,
         m_Height,
         props.Title.c_str(),
-        nullptr,
+        monitor,
         nullptr
     );
+
+    if (!props.Fullscreen && props.PosX >= 0 && props.PosY >= 0)
+    {
+        glfwSetWindowPos((GLFWwindow*)m_Window, props.PosX, props.PosY);
+    }
 
     if (!m_Window)
     {

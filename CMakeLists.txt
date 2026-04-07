@@ -16,3 +16,4 @@ endif()
 # TODO: Add tests and install targets if needed.
 add_subdirectory(engine)
 add_subdirectory(app)
+add_subdirectory(editor)

@@ -78,8 +78,8 @@ public:
 	}
 
 	void setDefaultValues() {
-		direction = { 0,0 };
-		position = { 8,6 };
+		direction = { 0, 0 };
+		position = { 3, 3 };
 		speed = 6;
 		colliderSize = 0.5f;
 		halfCollider = colliderSize / 2.0f;

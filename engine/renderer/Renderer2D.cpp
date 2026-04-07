@@ -430,9 +430,10 @@ void Renderer2D::DrawText(const TextProperties& properties)
 
 		DrawQuad({
 			.transform = cass::Matrix4<float>().translate({ x,y,0 }).scale({ w,h,1 }),
+			.argb = properties.argb,
 			.texture = font->atlas.get(),
 			.uv = { g.UV0.x, g.UV1.y, g.UV1.x, g.UV0.y },
-			.isText = true,
+			.isText = true
 			});
 
 		cursor.x += g.Advance * properties.scale.x;

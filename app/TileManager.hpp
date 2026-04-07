@@ -11,15 +11,34 @@ class TileManager {
 public:
     std::vector<std::vector<uint8_t>> mapTile;
 private:
-    Tile tiles[16];
+    Tile tiles[32];
     SpriteSheet atlas;
     Texture2D atlasTexture;
     
 
     void createTiles() { 
-        tiles[0] = Tile{ false, atlas.GetUV(1,0) }; 
-        tiles[1] = Tile{ false, atlas.GetUV(1,1) };
-        tiles[2] = Tile{ true, atlas.GetUV(1,2) };
+        tiles[0] = Tile{ false, atlas.GetUV(4,1) }; 
+        tiles[1] = Tile{ true, atlas.GetUV(4,0)};
+        tiles[2] = Tile{ true, atlas.GetUV(3,0) };
+        tiles[3] = Tile{ true, atlas.GetUV(3,1) };
+        tiles[4] = Tile{ false, atlas.GetUV(3,2) };
+        tiles[5] = Tile{ true, atlas.GetUV(4,2) };
+        tiles[6] = Tile{ true, atlas.GetUV(0,3) };
+        tiles[7] = Tile{ true, atlas.GetUV(1,3) };
+        tiles[8] = Tile{ true, atlas.GetUV(2,3) };
+        tiles[9] = Tile{ false, atlas.GetUV(2,0) };
+        tiles[10] = Tile{ false, atlas.GetUV(1,0) };
+        tiles[11] = Tile{ false, atlas.GetUV(0,0) };
+        tiles[12] = Tile{ false, atlas.GetUV(0,1) };
+        tiles[13] = Tile{ false, atlas.GetUV(0,2) };
+        tiles[14] = Tile{ false, atlas.GetUV(1,2) };
+        tiles[15] = Tile{ false, atlas.GetUV(2,2) };
+        tiles[16] = Tile{ false, atlas.GetUV(2,1) };
+        tiles[17] = Tile{ false, atlas.GetUV(1,1) };
+        tiles[18] = Tile{ true, atlas.GetUV(3,3) };
+        tiles[19] = Tile{ true, atlas.GetUV(4,3) };
+        tiles[20] = Tile{ true, atlas.GetUV(4,4) };
+        tiles[21] = Tile{ true, atlas.GetUV(3,4) };
     }
 
     void readTileMap(const std::string& path) {
@@ -61,7 +80,7 @@ public:
             .textureHeight = (int)atlasTexture.GetHeight(),
             .spriteWidth = 16,
             .spriteHeight = 16,
-            .rows = 1,
+            .rows = 2,
             .cols = 3
             };
 

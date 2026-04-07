@@ -47,7 +47,6 @@ public:
 		Application::SetClearColor(0xFF000000);
 		FontManager::Init();
 		arial24 = FontManager::Load("assets/arial.ttf", 24);
-
 	}
 
 protected:
@@ -55,7 +54,6 @@ protected:
 
 		player.handleInput();
 		player.update(deltaTime, tileManager);
-
 		v3 newCameraPosition = m_Camera.GetPosition() + (v3(player.position, 0.0f) - m_Camera.GetPosition()) * 0.1f;
 
 		m_Camera.SetPosition(newCameraPosition);
@@ -65,25 +63,6 @@ protected:
 		player.draw();
 		Renderer2D::EndScene();
 
-		Renderer2D::BeginScene(ui_Camera);
-		Renderer2D::DrawText({
-			.font = arial24,
-			.text = player.velocity.toString(),
-			.position = {0,150},
-		});
-		Renderer2D::DrawText({
-			.font = arial24,
-			.text = player.direction.toString(),
-			.position = {0,100},
-		});
-
-		Renderer2D::DrawText({
-			.font = arial24,
-			.text = player.position.toString(),
-			.position = {0,50},
-		});
-		Renderer2D::EndScene();
-		
 		showInfo(deltaTime);
 	}
 
