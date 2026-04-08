@@ -61,6 +61,24 @@ protected:
 			direction.x += 1;
 		}
 
+		if (Input::IsKeyPressed(GLFW_KEY_KP_ADD)) {
+			float zoom = m_Camera.GetZoom();
+			if (zoom >= 0.1f) {
+				zoom -= 0.01f;
+			}
+			m_Camera.SetZoom(zoom);
+		}
+
+
+		if (Input::IsKeyPressed(GLFW_KEY_KP_SUBTRACT)) {
+			float zoom = m_Camera.GetZoom();
+
+			if (zoom <= 1.5f) {
+				zoom += 0.01f;
+			}
+			m_Camera.SetZoom(zoom);
+		}
+
 		velocity = cass::Vector3<float>(direction, 0.0f).SafeNormalize() * 750;
 
 		newCamPosition += velocity * deltaTime;
@@ -165,7 +183,7 @@ int main() {
 		.Height = 720,
 		.Title = "Hola cara de bola",
 		.VSync = true,
-		.Resizable = true
+		.Fullscreen = true
 	};
 
 	Editor app(windowProps);
