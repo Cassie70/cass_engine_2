@@ -9,7 +9,7 @@ struct QuadVertex {
 	uint32_t ColorARGB;
 	cass::Vector2<float> TexCoords;
 	float TexIndex = 0;
-	float isText = 0;
+	float ShapeType = 0;
 };
 
 struct Renderer2DData {
@@ -60,14 +60,14 @@ static uint32_t CreateShader() {
         layout(location = 1) in uint a_Color;
         layout(location = 2) in vec2 a_TexCoord;
         layout(location = 3) in float a_TexIndex;
-		layout(location = 4) in float a_IsText;
+		layout(location = 4) in float a_ShapeType;
 
         uniform mat4 u_ViewProjection;
 
         out vec4 v_Color;
         out vec2 v_TexCoord;
         out float v_TexIndex;
-		out float v_IsText;
+		out float v_ShapeType;
 
         vec4 UnpackARGB(uint c) {
             float a = float((c >> 24) & 0xFF) / 255.0;
@@ -81,7 +81,7 @@ static uint32_t CreateShader() {
             v_Color = UnpackARGB(a_Color);
             v_TexCoord = a_TexCoord;
             v_TexIndex = a_TexIndex;
-			v_IsText = a_IsText; 
+			v_ShapeType = a_ShapeType; 
             gl_Position = u_ViewProjection * vec4(a_Position, 1.0);
         }
     )";
@@ -92,7 +92,7 @@ static uint32_t CreateShader() {
 		in vec4 v_Color;
 		in vec2 v_TexCoord;
 		in float v_TexIndex;
-		in float v_IsText;
+		in float v_ShapeType;
 
 		out vec4 FragColor;
 
@@ -101,7 +101,17 @@ static uint32_t CreateShader() {
 		void main() { 
 			vec4 texColor = texture(u_Textures[int(v_TexIndex)], v_TexCoord);
 
-			if(v_IsText > 0.5) {
+			if (v_ShapeType > 1.5) {
+				// círculo
+				vec2 coord = v_TexCoord * 2.0 - 1.0;
+				float dist = length(coord);
+
+				if (dist > 1.0)
+					discard;
+
+				FragColor = texColor * v_Color;
+
+			} else if(v_ShapeType > 0.5) {
 				// textura FreeType (solo canal rojo es alpha)
 				FragColor = vec4(v_Color.rgb, v_Color.a * texColor.r);
 			} else {
@@ -169,7 +179,7 @@ void Renderer2D::Init() {
 
 	glEnableVertexAttribArray(4);
 	glVertexAttribPointer(4, 1, GL_FLOAT, GL_FALSE,
-		sizeof(QuadVertex), (const void*)offsetof(QuadVertex, isText));
+		sizeof(QuadVertex), (const void*)offsetof(QuadVertex, ShapeType));
 
 	std::vector<uint32_t> indices(Renderer2DData::MaxIndices);
 
@@ -354,10 +364,7 @@ void Renderer2D::DrawQuad(const QuadProperties& properties) {
 		s_Data.VertexBufferPtr->ColorARGB = properties.argb;
 		s_Data.VertexBufferPtr->TexCoords = texCoords[i];
 		s_Data.VertexBufferPtr->TexIndex = textureIndex;
-		if(properties.isText)
-			s_Data.VertexBufferPtr->isText = 1.0;
-		else
-			s_Data.VertexBufferPtr->isText = 0;
+		s_Data.VertexBufferPtr->ShapeType = (float)properties.shape;
 		s_Data.VertexBufferPtr++;
 	}
 
@@ -391,6 +398,24 @@ void Renderer2D::DrawPolarLine(const PolarLineProperties& properties)
 		.argb = properties.argb,
 		.origin = {0,properties.origin}
 		});
+}
+
+void Renderer2D::DrawCircle(const CircleProperties& properties)
+{
+	cass::Vector2<float> center;
+	float radius;
+	uint32_t argb = 0xFFFFFFFF;
+	Texture2D* texture = nullptr;
+
+	DrawQuad({
+	.transform = cass::Matrix4<float>()
+		.translate(properties.position)
+		.scale(properties.radius*2),
+	.argb = properties.argb,
+	.texture = properties.texture,
+	.origin = { 0.5f, 0.5f},
+	.shape = Shape::Circle
+	});
 }
 
 void Renderer2D::DrawSprite(const SpriteProperties& properties)
@@ -433,7 +458,7 @@ void Renderer2D::DrawText(const TextProperties& properties)
 			.argb = properties.argb,
 			.texture = font->atlas.get(),
 			.uv = { g.UV0.x, g.UV1.y, g.UV1.x, g.UV0.y },
-			.isText = true
+			.shape = Shape::Text
 			});
 
 		cursor.x += g.Advance * properties.scale.x;

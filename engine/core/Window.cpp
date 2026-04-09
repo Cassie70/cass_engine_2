@@ -3,6 +3,7 @@
 #include <iostream>
 #include "Window.hpp"
 #include <KeyEvent.hpp>
+#include <WindowResizeEvent .hpp>
 
 Window::Window(const WindowProperties& props)
 {
@@ -98,6 +99,21 @@ void Window::Init(const WindowProperties& props)
             }
         });
 
+    glfwSetFramebufferSizeCallback((GLFWwindow*)m_Window,
+        [](GLFWwindow* window, int width, int height)
+        {
+            Window* win = (Window*)glfwGetWindowUserPointer(window);
+
+            // Actualizar dimensiones internas
+            win->m_Width = width;
+            win->m_Height = height;
+
+            glViewport(0, 0, width, height);
+
+            WindowResizeEvent e(width, height);
+            win->m_EventCallback(e);
+        });
+
     std::cout << "Renderer: " << glGetString(GL_RENDERER) << "\n";
     std::cout << "OpenGL: " << glGetString(GL_VERSION) << "\n";
 }
@@ -173,4 +189,13 @@ void Window::SetTitle(const std::string& title)
 {
     m_Title = title;
     glfwSetWindowTitle((GLFWwindow*)m_Window, title.c_str());
+}
+
+void Window::DispatchInitialResize()
+{
+    int width, height;
+    glfwGetFramebufferSize((GLFWwindow*)m_Window, &width, &height);
+    glViewport(0, 0, width, height);
+    WindowResizeEvent e(width, height);
+    m_EventCallback(e);
 }

@@ -42,7 +42,7 @@ public:
     bool IsVSync() const { return m_VSync; }
 
     void* GetNativeWindow() const { return m_Window; } // GLFWwindow*
-
+    void DispatchInitialResize();
     bool ShouldClose() const;
 
 private:

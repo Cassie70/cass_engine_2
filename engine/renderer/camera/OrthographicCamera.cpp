@@ -8,6 +8,16 @@ OrthographicCamera::OrthographicCamera(float left, float right, float bottom, fl
     RecalculateViewMatrix();
 }
 
+void OrthographicCamera::SetProjection(float left, float right, float bottom, float top)
+{
+    m_Left = left;
+    m_Right = right;
+    m_Bottom = bottom;
+    m_Top = top;
+
+    RecalculateProjectionMatrix();
+}
+
 void OrthographicCamera::SetPosition(const cass::Vector3<float>& position) {
     m_Position = position;
     RecalculateViewMatrix();

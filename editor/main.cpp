@@ -4,6 +4,7 @@
 #include <KeyEvent.hpp>
 #include <GLFW/glfw3.h>
 #include <Input.hpp>
+#include <WindowResizeEvent .hpp>
 
 using v3 = cass::Vector3<float>;
 
@@ -120,6 +121,20 @@ protected:
 				std::cout << "F11 presionado\n";
 			}
 		}
+
+		if (e.GetType() == EventType::WindowResize)
+		{
+			auto& resize = (WindowResizeEvent&)e;
+
+			m_Camera.SetProjection(
+				-resize.Width * 0.5f,
+				resize.Width * 0.5f,
+				-resize.Height * 0.5f,
+				resize.Height * 0.5f
+			);
+
+			ui_Camera.SetProjection(0, resize.Width, resize.Height, 0);
+		}
 	}
 
 	void DrawGrid(
@@ -183,7 +198,7 @@ int main() {
 		.Height = 720,
 		.Title = "Hola cara de bola",
 		.VSync = true,
-		.Fullscreen = true
+		.Maximized = true
 	};
 
 	Editor app(windowProps);

@@ -3,6 +3,12 @@
 #include "Texture2D.hpp"
 #include <camera/OrthographicCamera.hpp>
 
+enum class Shape : uint8_t {
+	Quad = 0,
+	Text = 1,
+	Circle = 2
+};
+
 struct Renderer2DStats {
 	uint32_t DrawCalls = 0;
 	uint32_t QuadCount = 0;
@@ -17,7 +23,7 @@ struct QuadProperties {
     Texture2D* texture = nullptr;
     cass::Vector4<float> uv = { 0, 0, 1, 1 };
     cass::Vector2<float> origin = { 0, 0 };
-	bool isText = false;
+	Shape shape = Shape::Quad;
 };
 
 struct CartesianLineProperties {
@@ -38,7 +44,7 @@ struct PolarLineProperties {
 };
 
 struct CircleProperties {
-	cass::Vector2<float> center;
+	cass::Vector2<float> position;
 	float radius;
 	uint32_t argb = 0xFFFFFFFF;
 	Texture2D* texture = nullptr;

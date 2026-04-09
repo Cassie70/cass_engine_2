@@ -1,3 +1,6 @@
+#pragma once
+#include "Event.hpp"
+
 class MouseMovedEvent : public Event {
 private:
     float m_X, m_Y;

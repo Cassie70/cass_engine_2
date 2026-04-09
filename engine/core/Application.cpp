@@ -14,6 +14,7 @@ Application::Application(const WindowProperties& props)
             this->OnEvent(e);
         }
     );
+
     deltaTime = 0;
     Renderer::Init();
     Renderer2D::Init();
@@ -26,6 +27,7 @@ Application::~Application()
 
 void Application::Run()
 {
+    m_Window->DispatchInitialResize();
     while (!m_Window->ShouldClose())
     {
         deltaTime = Time::GetDeltaTime();
