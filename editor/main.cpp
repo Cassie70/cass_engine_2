@@ -86,8 +86,28 @@ protected:
 
 		m_Camera.SetPosition(newCamPosition);
 
-		Renderer2D::BeginScene(m_Camera);
 
+		cass::Vector2<float> screen = Input::GetMousePosition();
+
+		float x_ndc = (2.0f * screen.x) / Application::m_Window->GetWidth() - 1.0f;
+		float y_ndc = 1.0f - (2.0f * screen.y) / Application::m_Window->GetHeight();
+
+		cass::Vector4<float> clipPos = {
+			x_ndc,
+			y_ndc,
+			0.0f,
+			1.0f
+		};
+
+		cass::Matrix4<float> viewProj = m_Camera.GetViewProjection();
+		cass::Vector4<float> world = viewProj.inverse() * clipPos;
+
+		cass::Vector2<float> worldMouse = {
+			world.x,
+			world.y
+		};
+
+		Renderer2D::BeginScene(m_Camera);
 		DrawGrid(
 			props.Width,
 			props.Height,
@@ -95,15 +115,20 @@ protected:
 			0xFF555555,   // color visible
 			1.0f          // grosor
 		);
+		Renderer2D::DrawQuad({
+			.transform = cass::Matrix4<float>().translate({0,0}).scale(16),
+			.origin = {0.5,0.5}
+			});
 		Renderer2D::EndScene();
 
 		Renderer2D::BeginScene(ui_Camera);
 		Renderer2D::DrawText({
 			.font = arial24,
-			.text = Input::GetMousePosition().toString(),
+			.text = "Screen: " + Input::GetMousePosition().toString() +
+					" | World: " + worldMouse.toString(),
 			.position = { 50, 50},
 			.scale = { 1.0f, -1.0f }
-			});
+		});
 		Renderer2D::EndScene();
 
 		showInfo(deltaTime);

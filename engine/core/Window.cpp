@@ -74,6 +74,12 @@ void Window::Init(const WindowProperties& props)
     glfwMakeContextCurrent((GLFWwindow*)m_Window);
     glfwSetWindowUserPointer((GLFWwindow*)m_Window, this);
 
+    int width, height;
+    glfwGetFramebufferSize((GLFWwindow*)m_Window, &width, &height);
+
+    m_Width = width;
+    m_Height = height;
+
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
         std::cerr << "Failed to init GLAD\n";

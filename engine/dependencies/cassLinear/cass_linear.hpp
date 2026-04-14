@@ -336,6 +336,42 @@ namespace cass
             return *this;
         }
 
+        Matrix3& inverse() {
+            Matrix3 inv;
+
+            T* a = &m[0][0];
+            T* invOut = &inv.m[0][0];
+
+            invOut[0] = a[4] * a[8] - a[5] * a[7];
+            invOut[1] = -(a[1] * a[8] - a[2] * a[7]);
+            invOut[2] = a[1] * a[5] - a[2] * a[4];
+
+            invOut[3] = -(a[3] * a[8] - a[5] * a[6]);
+            invOut[4] = a[0] * a[8] - a[2] * a[6];
+            invOut[5] = -(a[0] * a[5] - a[2] * a[3]);
+
+            invOut[6] = a[3] * a[7] - a[4] * a[6];
+            invOut[7] = -(a[0] * a[7] - a[1] * a[6]);
+            invOut[8] = a[0] * a[4] - a[1] * a[3];
+
+            T det =
+                a[0] * invOut[0] +
+                a[1] * invOut[3] +
+                a[2] * invOut[6];
+
+            if (det == 0) {
+                return *this; // no invertible
+            }
+
+            det = 1.0 / det;
+
+            for (int i = 0; i < 9; i++)
+                invOut[i] *= det;
+
+            *this = inv;
+            return *this;
+        }
+
         Matrix3& translate(const Vector2<T> &v)
         {
             Matrix3 translationMatrix;
@@ -514,6 +550,138 @@ namespace cass
                            m[1][0] * v.x + m[1][1] * v.y + m[1][2] * v.z + m[1][3] * v.t,
                            m[2][0] * v.x + m[2][1] * v.y + m[2][2] * v.z + m[2][3] * v.t,
                            m[3][0] * v.x + m[3][1] * v.y + m[3][2] * v.z + m[3][3] * v.t);
+        }
+
+        Matrix4& inverse() {
+            Matrix4 inv;
+            T* invOut = &inv.m[0][0];
+            const T* a = &m[0][0];
+
+            invOut[0] = a[5] * a[10] * a[15] -
+                a[5] * a[11] * a[14] -
+                a[9] * a[6] * a[15] +
+                a[9] * a[7] * a[14] +
+                a[13] * a[6] * a[11] -
+                a[13] * a[7] * a[10];
+
+            invOut[4] = -a[4] * a[10] * a[15] +
+                a[4] * a[11] * a[14] +
+                a[8] * a[6] * a[15] -
+                a[8] * a[7] * a[14] -
+                a[12] * a[6] * a[11] +
+                a[12] * a[7] * a[10];
+
+            invOut[8] = a[4] * a[9] * a[15] -
+                a[4] * a[11] * a[13] -
+                a[8] * a[5] * a[15] +
+                a[8] * a[7] * a[13] +
+                a[12] * a[5] * a[11] -
+                a[12] * a[7] * a[9];
+
+            invOut[12] = -a[4] * a[9] * a[14] +
+                a[4] * a[10] * a[13] +
+                a[8] * a[5] * a[14] -
+                a[8] * a[6] * a[13] -
+                a[12] * a[5] * a[10] +
+                a[12] * a[6] * a[9];
+
+            invOut[1] = -a[1] * a[10] * a[15] +
+                a[1] * a[11] * a[14] +
+                a[9] * a[2] * a[15] -
+                a[9] * a[3] * a[14] -
+                a[13] * a[2] * a[11] +
+                a[13] * a[3] * a[10];
+
+            invOut[5] = a[0] * a[10] * a[15] -
+                a[0] * a[11] * a[14] -
+                a[8] * a[2] * a[15] +
+                a[8] * a[3] * a[14] +
+                a[12] * a[2] * a[11] -
+                a[12] * a[3] * a[10];
+
+            invOut[9] = -a[0] * a[9] * a[15] +
+                a[0] * a[11] * a[13] +
+                a[8] * a[1] * a[15] -
+                a[8] * a[3] * a[13] -
+                a[12] * a[1] * a[11] +
+                a[12] * a[3] * a[9];
+
+            invOut[13] = a[0] * a[9] * a[14] -
+                a[0] * a[10] * a[13] -
+                a[8] * a[1] * a[14] +
+                a[8] * a[2] * a[13] +
+                a[12] * a[1] * a[10] -
+                a[12] * a[2] * a[9];
+
+            invOut[2] = a[1] * a[6] * a[15] -
+                a[1] * a[7] * a[14] -
+                a[5] * a[2] * a[15] +
+                a[5] * a[3] * a[14] +
+                a[13] * a[2] * a[7] -
+                a[13] * a[3] * a[6];
+
+            invOut[6] = -a[0] * a[6] * a[15] +
+                a[0] * a[7] * a[14] +
+                a[4] * a[2] * a[15] -
+                a[4] * a[3] * a[14] -
+                a[12] * a[2] * a[7] +
+                a[12] * a[3] * a[6];
+
+            invOut[10] = a[0] * a[5] * a[15] -
+                a[0] * a[7] * a[13] -
+                a[4] * a[1] * a[15] +
+                a[4] * a[3] * a[13] +
+                a[12] * a[1] * a[7] -
+                a[12] * a[3] * a[5];
+
+            invOut[14] = -a[0] * a[5] * a[14] +
+                a[0] * a[6] * a[13] +
+                a[4] * a[1] * a[14] -
+                a[4] * a[2] * a[13] -
+                a[12] * a[1] * a[6] +
+                a[12] * a[2] * a[5];
+
+            invOut[3] = -a[1] * a[6] * a[11] +
+                a[1] * a[7] * a[10] +
+                a[5] * a[2] * a[11] -
+                a[5] * a[3] * a[10] -
+                a[9] * a[2] * a[7] +
+                a[9] * a[3] * a[6];
+
+            invOut[7] = a[0] * a[6] * a[11] -
+                a[0] * a[7] * a[10] -
+                a[4] * a[2] * a[11] +
+                a[4] * a[3] * a[10] +
+                a[8] * a[2] * a[7] -
+                a[8] * a[3] * a[6];
+
+            invOut[11] = -a[0] * a[5] * a[11] +
+                a[0] * a[7] * a[9] +
+                a[4] * a[1] * a[11] -
+                a[4] * a[3] * a[9] -
+                a[8] * a[1] * a[7] +
+                a[8] * a[3] * a[5];
+
+            invOut[15] = a[0] * a[5] * a[10] -
+                a[0] * a[6] * a[9] -
+                a[4] * a[1] * a[10] +
+                a[4] * a[2] * a[9] +
+                a[8] * a[1] * a[6] -
+                a[8] * a[2] * a[5];
+
+            T det = a[0] * invOut[0] + a[1] * invOut[4] + a[2] * invOut[8] + a[3] * invOut[12];
+
+            if (det == 0) {
+                return *this;
+            }
+
+            det = 1.0 / det;
+
+            for (int i = 0; i < 16; i++)
+                invOut[i] *= det;
+
+            *this = inv;
+            return *this;
         }
 
         Matrix4& translate(const Vector3<T> &v)

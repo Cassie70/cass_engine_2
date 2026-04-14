@@ -61,11 +61,6 @@ protected:
 		Renderer2D::BeginScene(m_Camera);
 		tileManager.draw(m_Camera.GetPosition(), screenCols, screenRows);
 		player.draw();
-		Renderer2D::DrawCircle({
-			.position = { 8,6 },
-			.radius = 0.5f,
-			.argb = 0xFFFF0000
-			});
 		Renderer2D::EndScene();
 
 		showInfo(deltaTime);
