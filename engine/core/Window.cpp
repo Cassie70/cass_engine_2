@@ -4,6 +4,7 @@
 #include "Window.hpp"
 #include <KeyEvent.hpp>
 #include <WindowResizeEvent .hpp>
+#include <MouseScrolledEvent .hpp>
 
 Window::Window(const WindowProperties& props)
 {
@@ -119,6 +120,15 @@ void Window::Init(const WindowProperties& props)
             WindowResizeEvent e(width, height);
             win->m_EventCallback(e);
         });
+
+    glfwSetScrollCallback((GLFWwindow*)m_Window,
+    [](GLFWwindow* win, double xOffset, double yOffset)
+    {
+        Window* window = (Window*)glfwGetWindowUserPointer(win);
+
+        MouseScrolledEvent e((float)xOffset, (float)yOffset);
+        window->m_EventCallback(e);
+    });
 
     std::cout << "Renderer: " << glGetString(GL_RENDERER) << "\n";
     std::cout << "OpenGL: " << glGetString(GL_VERSION) << "\n";

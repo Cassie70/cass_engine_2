@@ -5,6 +5,7 @@
 #include <GLFW/glfw3.h>
 #include <Input.hpp>
 #include <WindowResizeEvent .hpp>
+#include <MouseScrolledEvent .hpp>
 
 using v3 = cass::Vector3<float>;
 
@@ -13,6 +14,11 @@ private:
 	OrthographicCamera m_Camera;
 	cass::Vector2<int> direction;
 	cass::Vector3<float> velocity;
+
+	bool m_Dragging = false;
+	cass::Vector2<float> worldMouse;
+	cass::Vector2<float> m_LastWorldMouse;
+	cass::Vector2<float> m_LastMousePos;
 
 	OrthographicCamera ui_Camera;
 	WindowProperties props;
@@ -45,22 +51,7 @@ public:
 protected:
 	void OnUpdate(float deltaTime) override {
 
-		direction = { 0,0 };
-
-		v3 newCamPosition = m_Camera.GetPosition();
-
-		if (Input::IsKeyPressed(GLFW_KEY_UP)) {
-			direction.y += 1;
-		}
-		if (Input::IsKeyPressed(GLFW_KEY_DOWN)) {
-			direction.y -= 1;
-		}
-		if (Input::IsKeyPressed(GLFW_KEY_LEFT)) {
-			direction.x -= 1;
-		}
-		if (Input::IsKeyPressed(GLFW_KEY_RIGHT)) {
-			direction.x += 1;
-		}
+		cass::Vector2<float> screen = Input::GetMousePosition();
 
 		if (Input::IsKeyPressed(GLFW_KEY_KP_ADD)) {
 			float zoom = m_Camera.GetZoom();
@@ -80,44 +71,59 @@ protected:
 			m_Camera.SetZoom(zoom);
 		}
 
-		velocity = cass::Vector3<float>(direction, 0.0f).SafeNormalize() * 750;
+		v3 camPos = m_Camera.GetPosition();
+		cass::Vector2<float> mouse = Input::GetMousePosition();
 
-		newCamPosition += velocity * deltaTime;
+		if (Input::IsMousePressed(GLFW_MOUSE_BUTTON_MIDDLE))
+		{
+			if (!m_Dragging)
+			{
+				m_Dragging = true;
+				m_LastWorldMouse = ScreenToWorld(mouse);
+			}
 
-		m_Camera.SetPosition(newCamPosition);
+			// 🔥 calcular con cámara actual
+			cass::Vector2<float> currentWorld = ScreenToWorld(mouse);
 
+			cass::Vector2<float> delta = m_LastWorldMouse - currentWorld;
 
-		cass::Vector2<float> screen = Input::GetMousePosition();
+			camPos.x += delta.x;
+			camPos.y += delta.y;
 
-		float x_ndc = (2.0f * screen.x) / Application::m_Window->GetWidth() - 1.0f;
-		float y_ndc = 1.0f - (2.0f * screen.y) / Application::m_Window->GetHeight();
+			m_Camera.SetPosition(camPos); // 👈 aplicar inmediatamente
 
-		cass::Vector4<float> clipPos = {
-			x_ndc,
-			y_ndc,
-			0.0f,
-			1.0f
-		};
+			// 🔥 recalcular con la cámara nueva
+			m_LastWorldMouse = ScreenToWorld(mouse);
+		}
+		else
+		{
+			m_Dragging = false;
 
-		cass::Matrix4<float> viewProj = m_Camera.GetViewProjection();
-		cass::Vector4<float> world = viewProj.inverse() * clipPos;
+			direction = { 0,0 };
 
-		cass::Vector2<float> worldMouse = {
-			world.x,
-			world.y
-		};
+			if (Input::IsKeyPressed(GLFW_KEY_UP)) direction.y += 1;
+			if (Input::IsKeyPressed(GLFW_KEY_DOWN)) direction.y -= 1;
+			if (Input::IsKeyPressed(GLFW_KEY_LEFT)) direction.x -= 1;
+			if (Input::IsKeyPressed(GLFW_KEY_RIGHT)) direction.x += 1;
+
+			velocity = cass::Vector3<float>(direction, 0.0f).SafeNormalize() * 400;
+
+			camPos += velocity * deltaTime;
+		}
+
+	
+		// -------- APPLY FINAL --------
+		m_Camera.SetPosition(camPos);
 
 		Renderer2D::BeginScene(m_Camera);
-		DrawGrid(
-			props.Width,
-			props.Height,
-			16.0f,        // tile size
-			0xFF555555,   // color visible
-			1.0f          // grosor
+		DrawGridInfinite(
+			16.0f,
+			0xFF555555,
+			1.0f
 		);
 		Renderer2D::DrawQuad({
 			.transform = cass::Matrix4<float>().translate({0,0}).scale(16),
-			.origin = {0.5,0.5}
+			.origin = {0,0}
 			});
 		Renderer2D::EndScene();
 
@@ -160,37 +166,75 @@ protected:
 
 			ui_Camera.SetProjection(0, resize.Width, resize.Height, 0);
 		}
+
+		if (e.GetType() == EventType::MouseScrolled)
+		{
+			auto& scroll = (MouseScrolledEvent&)e;
+
+			float zoom = m_Camera.GetZoom();
+
+			// scroll.GetYOffset() suele ser +1 (arriba) o -1 (abajo)
+			zoom -= scroll.GetYOffset() * 0.1f;
+
+			// Clamp (muy importante)
+			if (zoom < 0.1f) zoom = 0.1f;
+			if (zoom > 1.5f) zoom = 1.5f;
+
+			m_Camera.SetZoom(zoom);
+		}
 	}
 
-	void DrawGrid(
-		float width,
-		float height,
+	void DrawGridInfinite(
 		float tileSize,
-		uint32_t color = 0xFF444444,
-		float weight = 1.0f
+		uint32_t color,
+		float weight
 	) {
-		float halfW = width * 0.5f;
-		float halfH = height * 0.5f;
+		cass::Vector3<float> camPos = m_Camera.GetPosition();
+		float zoom = m_Camera.GetZoom();
 
-		// Líneas verticales
-		for (float x = -halfW; x <= halfW; x += tileSize) {
+		float viewWidth = Application::m_Window->GetWidth() * zoom;
+		float viewHeight = Application::m_Window->GetHeight() * zoom;
+
+		float left = camPos.x - viewWidth * 0.5f;
+		float right = camPos.x + viewWidth * 0.5f;
+		float bottom = camPos.y - viewHeight * 0.5f;
+		float top = camPos.y + viewHeight * 0.5f;
+
+		float startX = floor(left / tileSize) * tileSize;
+		float startY = floor(bottom / tileSize) * tileSize;
+
+		// Verticales
+		for (float x = startX; x <= right; x += tileSize) {
 			Renderer2D::DrawCartesianLine({
-				.start = { x, -halfH },
-				.end = { x,  halfH },
+				.start = { x, bottom },
+				.end = { x, top },
 				.argb = color,
 				.weight = weight
 				});
 		}
 
-		// Líneas horizontales
-		for (float y = -halfH; y <= halfH; y += tileSize) {
+		// Horizontales
+		for (float y = startY; y <= top; y += tileSize) {
 			Renderer2D::DrawCartesianLine({
-				.start = { -halfW, y },
-				.end = {  halfW, y },
+				.start = { left, y },
+				.end = { right, y },
 				.argb = color,
 				.weight = weight
 				});
 		}
+	}
+
+	cass::Vector2<float> ScreenToWorld(const cass::Vector2<float>& screen)
+	{
+		float x_ndc = (2.0f * screen.x) / Application::m_Window->GetWidth() - 1.0f;
+		float y_ndc = 1.0f - (2.0f * screen.y) / Application::m_Window->GetHeight();
+
+		cass::Vector4<float> clipPos = { x_ndc, y_ndc, 0.0f, 1.0f };
+
+		cass::Matrix4<float> viewProj = m_Camera.GetViewProjection();
+		cass::Vector4<float> world = viewProj.inverse() * clipPos;
+
+		return { world.x, world.y };
 	}
 
 	void showInfo(float deltaTime)
