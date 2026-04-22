@@ -1,4 +1,6 @@
 #pragma once
+#include "Event.hpp"
+
 class KeyEvent : public Event {
 protected:
     int m_KeyCode;

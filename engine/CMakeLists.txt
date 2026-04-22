@@ -14,7 +14,7 @@ add_library(engine STATIC
     "resources/Texture2D.cpp" 
     "input/Input.cpp" 
     "resources/FontManager.cpp"
-)
+ )
 
 target_include_directories(engine PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/core
@@ -22,6 +22,7 @@ target_include_directories(engine PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/event
     ${CMAKE_CURRENT_SOURCE_DIR}/resources
     ${CMAKE_CURRENT_SOURCE_DIR}/input
+    ${CMAKE_CURRENT_SOURCE_DIR}/utils
     ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/cassLinear
     ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/stb
 )

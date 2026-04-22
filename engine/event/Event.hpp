@@ -1,12 +1,5 @@
 #pragma once
-enum class EventType {
-    None = 0,
-    KeyPressed, KeyReleased,
-    MouseButtonPressed, MouseButtonReleased,
-    MouseMoved, MouseScrolled,
-    WindowClose, WindowResize
-};
-
+#include <EventType.hpp>
 class Event {
 public:
     virtual EventType GetType() const = 0;

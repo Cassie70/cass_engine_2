@@ -1,6 +1,6 @@
 add_executable(editor
     main.cpp
- )
+  "CameraController.cpp")
 
 target_link_libraries(editor PRIVATE engine)
 

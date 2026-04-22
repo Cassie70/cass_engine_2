@@ -5,6 +5,7 @@
 #include <KeyEvent.hpp>
 #include <WindowResizeEvent .hpp>
 #include <MouseScrolledEvent .hpp>
+#include <MousePressedEvent.hpp>
 
 Window::Window(const WindowProperties& props)
 {
@@ -102,6 +103,17 @@ void Window::Init(const WindowProperties& props)
             }
             else if (action == GLFW_RELEASE) {
                 KeyReleasedEvent e(key);
+                win->m_EventCallback(e);
+            }
+        });
+
+    glfwSetMouseButtonCallback((GLFWwindow*)m_Window, [](GLFWwindow* window, int button, int action, int mods)
+        {
+            Window* win = (Window*)glfwGetWindowUserPointer(window);
+
+            if (action == GLFW_PRESS)
+            {
+                MousePressedEvent e(button);
                 win->m_EventCallback(e);
             }
         });

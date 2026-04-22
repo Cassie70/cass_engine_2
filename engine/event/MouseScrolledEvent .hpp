@@ -1,3 +1,6 @@
+#pragma once
+#include "Event.hpp"
+
 class MouseScrolledEvent : public Event
 {
 public:

@@ -6,29 +6,37 @@
 #include <Input.hpp>
 #include <WindowResizeEvent .hpp>
 #include <MouseScrolledEvent .hpp>
+#include "CameraController.hpp"
+#include <SpriteSheet.hpp>
+#include <MousePressedEvent.hpp>
 
 using v3 = cass::Vector3<float>;
 
 class Editor : public Application {
 private:
 	OrthographicCamera m_Camera;
-	cass::Vector2<int> direction;
-	cass::Vector3<float> velocity;
-
-	bool m_Dragging = false;
-	cass::Vector2<float> worldMouse;
-	cass::Vector2<float> m_LastWorldMouse;
-	cass::Vector2<float> m_LastMousePos;
-
 	OrthographicCamera ui_Camera;
-	WindowProperties props;
+	CameraController cameraController;
 
 	float m_TimeAccumulator = 0.0f;
 	int m_FrameCount = 0;
 	float accumulator = 0;
 	float frameDt = 0;
 
+	float uiTileSize = 75.0f;
+	int uiColumns = 5;
+	float panelWidth = uiTileSize* uiColumns;
+
+	int selectedRow = -1;
+	int selectedCol = -1;
+
+	cass::Vector2<float> selectedPos;
+	bool hasSelection = false;
+
 	uint32_t arial24;
+	std::vector<std::vector<uint8_t>> mapTile;
+	Texture2D atlasTexture;
+	SpriteSheet ss;
 
 public:
 	Editor(const WindowProperties& props) :
@@ -39,102 +47,105 @@ public:
 			-((float)props.Height) * 0.5f,
 			((float)props.Height) * 0.5f
 		),
-		ui_Camera(0, props.Width, props.Height, 0),
-		props(props)
+		ui_Camera(0.0f, (float)props.Width, 0.0f, (float)props.Height),
+		cameraController(m_Camera),
+		atlasTexture("assets/atlas.png", Texture2DParams{})
 	{
 		Application::SetClearColor(0xFF121212);
 		FontManager::Init();
 
 		arial24 = FontManager::Load("assets/arial.ttf", 24);
+
+		ss = SpriteSheetParams{
+			.textureWidth = (int)atlasTexture.GetWidth(),
+			.textureHeight = (int)atlasTexture.GetHeight(),
+			.spriteWidth = 16,
+			.spriteHeight = 16,
+			.rows = 6,
+			.cols = 5
+		};
 	}
 
 protected:
+
 	void OnUpdate(float deltaTime) override {
 
-		cass::Vector2<float> screen = Input::GetMousePosition();
-
-		if (Input::IsKeyPressed(GLFW_KEY_KP_ADD)) {
-			float zoom = m_Camera.GetZoom();
-			if (zoom >= 0.1f) {
-				zoom -= 0.01f;
-			}
-			m_Camera.SetZoom(zoom);
-		}
-
-
-		if (Input::IsKeyPressed(GLFW_KEY_KP_SUBTRACT)) {
-			float zoom = m_Camera.GetZoom();
-
-			if (zoom <= 1.5f) {
-				zoom += 0.01f;
-			}
-			m_Camera.SetZoom(zoom);
-		}
-
-		v3 camPos = m_Camera.GetPosition();
-		cass::Vector2<float> mouse = Input::GetMousePosition();
-
-		if (Input::IsMousePressed(GLFW_MOUSE_BUTTON_MIDDLE))
-		{
-			if (!m_Dragging)
-			{
-				m_Dragging = true;
-				m_LastWorldMouse = ScreenToWorld(mouse);
-			}
-
-			// 🔥 calcular con cámara actual
-			cass::Vector2<float> currentWorld = ScreenToWorld(mouse);
-
-			cass::Vector2<float> delta = m_LastWorldMouse - currentWorld;
-
-			camPos.x += delta.x;
-			camPos.y += delta.y;
-
-			m_Camera.SetPosition(camPos); // 👈 aplicar inmediatamente
-
-			// 🔥 recalcular con la cámara nueva
-			m_LastWorldMouse = ScreenToWorld(mouse);
-		}
-		else
-		{
-			m_Dragging = false;
-
-			direction = { 0,0 };
-
-			if (Input::IsKeyPressed(GLFW_KEY_UP)) direction.y += 1;
-			if (Input::IsKeyPressed(GLFW_KEY_DOWN)) direction.y -= 1;
-			if (Input::IsKeyPressed(GLFW_KEY_LEFT)) direction.x -= 1;
-			if (Input::IsKeyPressed(GLFW_KEY_RIGHT)) direction.x += 1;
-
-			velocity = cass::Vector3<float>(direction, 0.0f).SafeNormalize() * 400;
-
-			camPos += velocity * deltaTime;
-		}
-
-	
-		// -------- APPLY FINAL --------
-		m_Camera.SetPosition(camPos);
-
+		cameraController.HandleInputUpdate(deltaTime, Application::GetWindow().GetWidth(), Application::GetWindow().GetHeight());
+		
 		Renderer2D::BeginScene(m_Camera);
-		DrawGridInfinite(
-			16.0f,
-			0xFF555555,
-			1.0f
-		);
+
+		DrawGridInfinite(16.0f,0xFF555555,1.0f);
+
 		Renderer2D::DrawQuad({
 			.transform = cass::Matrix4<float>().translate({0,0}).scale(16),
-			.origin = {0,0}
+			.texture = &atlasTexture,
+			.uv = ss.GetUV(1,1),
+			.origin = {0,0},
 			});
+		Renderer2D::DrawQuad({
+			.transform = cass::Matrix4<float>().translate({0,0}).scale(16),
+			.argb = 0x80FFFFFF,
+			.origin = {0,0},
+		});
 		Renderer2D::EndScene();
 
-		Renderer2D::BeginScene(ui_Camera);
+		Renderer2D::BeginScene(ui_Camera); 
+
 		Renderer2D::DrawText({
 			.font = arial24,
-			.text = "Screen: " + Input::GetMousePosition().toString() +
-					" | World: " + worldMouse.toString(),
+			.text = "Screen: " + Input::GetMousePosition().toString() + " | World: "  + cameraController.getWorldMouse().toString(),
 			.position = { 50, 50},
-			.scale = { 1.0f, -1.0f }
+			.scale = { 1.0f, 1.0f }
 		});
+
+		int index = 0;
+
+		Renderer2D::DrawQuad({
+			.transform = cass::Matrix4<float>().translate({getStartX(), 0}).scale({panelWidth,(float)Application::GetWindow().GetHeight()}),
+			.argb = 0xff2f2f2f,
+			.origin = {0,0}
+		});
+
+		for (int row = 0; row < ss.rows; row++) {
+			for (int col = 0; col < ss.cols; col++) {
+				int uiRow = index / uiColumns;
+				int uiCol = index % uiColumns;
+
+				int currentRow = index / ss.cols;
+				int currentCol = index % ss.cols;
+
+				bool isSelected = (row == selectedRow && col == selectedCol);
+
+				float x = getStartX() + (uiCol * uiTileSize);
+				float y = Application::GetWindow().GetHeight() - uiRow * uiTileSize;
+				
+				Renderer2D::DrawSprite({
+					.position = {x, y},
+					.size = {uiTileSize, uiTileSize},
+					.texture = &atlasTexture,
+					.uv = ss.GetUV(row, col),
+					.origin = {0,1}
+				});
+
+				if (isSelected) {
+					selectedPos = {x, y};
+					hasSelection = true;
+				}
+
+				index++;
+			}
+		}
+
+		if (hasSelection) {
+			Renderer2D::DrawQuad({
+				.transform = cass::Matrix4<float>()
+					.translate({selectedPos.x, selectedPos.y})
+					.scale({uiTileSize, uiTileSize}),
+				.argb = 0x55ffffff,
+				.origin = {0, 1}
+			});
+		}
+
 		Renderer2D::EndScene();
 
 		showInfo(deltaTime);
@@ -142,19 +153,7 @@ protected:
 
 	void OnEvent(Event& e) override
 	{
-		if (e.GetType() == EventType::KeyPressed)
-		{
-			KeyPressedEvent& ke = (KeyPressedEvent&)e;
-
-			if (ke.GetKeyCode() == GLFW_KEY_F11)
-			{
-				Application::Get().GetWindow().ToggleFullscreen();
-				std::cout << "F11 presionado\n";
-			}
-		}
-
-		if (e.GetType() == EventType::WindowResize)
-		{
+		if (e.GetType() == EventType::WindowResize) {
 			auto& resize = (WindowResizeEvent&)e;
 
 			m_Camera.SetProjection(
@@ -164,23 +163,35 @@ protected:
 				resize.Height * 0.5f
 			);
 
-			ui_Camera.SetProjection(0, resize.Width, resize.Height, 0);
+			ui_Camera.SetProjection(0, resize.Width, 0, resize.Height);
 		}
 
-		if (e.GetType() == EventType::MouseScrolled)
-		{
-			auto& scroll = (MouseScrolledEvent&)e;
+		cameraController.HandleInputEvent(e);
 
-			float zoom = m_Camera.GetZoom();
 
-			// scroll.GetYOffset() suele ser +1 (arriba) o -1 (abajo)
-			zoom -= scroll.GetYOffset() * 0.1f;
+		if (e.GetType() == EventType::MousePressed) {
+			auto& mouse = (MousePressedEvent&)e;
 
-			// Clamp (muy importante)
-			if (zoom < 0.1f) zoom = 0.1f;
-			if (zoom > 1.5f) zoom = 1.5f;
+			if (mouse.GetButton() == GLFW_MOUSE_BUTTON_LEFT) {
+				auto mousePos = Input::GetMousePosition();
 
-			m_Camera.SetZoom(zoom);
+				if (mousePos.x >= getStartX()) {
+					float localX = mousePos.x - getStartX();
+					float localY = mousePos.y;
+
+					int col = (int)(localX / uiTileSize);
+					int row = (int)(localY / uiTileSize);
+
+					int index = row * uiColumns + col;
+
+					if (index >= 0 && index < ss.rows * ss.cols)
+					{
+						selectedRow = index / uiColumns;
+						selectedCol = index % uiColumns;
+					}
+					std::cout << "Selected: " << selectedRow << ", " << selectedCol << std::endl;
+				}
+			}
 		}
 	}
 
@@ -192,8 +203,8 @@ protected:
 		cass::Vector3<float> camPos = m_Camera.GetPosition();
 		float zoom = m_Camera.GetZoom();
 
-		float viewWidth = Application::m_Window->GetWidth() * zoom;
-		float viewHeight = Application::m_Window->GetHeight() * zoom;
+		float viewWidth = Application::GetWindow().GetWidth() * zoom;
+		float viewHeight = Application::GetWindow().GetHeight() * zoom;
 
 		float left = camPos.x - viewWidth * 0.5f;
 		float right = camPos.x + viewWidth * 0.5f;
@@ -210,7 +221,7 @@ protected:
 				.end = { x, top },
 				.argb = color,
 				.weight = weight
-				});
+			});
 		}
 
 		// Horizontales
@@ -220,21 +231,8 @@ protected:
 				.end = { right, y },
 				.argb = color,
 				.weight = weight
-				});
+			});
 		}
-	}
-
-	cass::Vector2<float> ScreenToWorld(const cass::Vector2<float>& screen)
-	{
-		float x_ndc = (2.0f * screen.x) / Application::m_Window->GetWidth() - 1.0f;
-		float y_ndc = 1.0f - (2.0f * screen.y) / Application::m_Window->GetHeight();
-
-		cass::Vector4<float> clipPos = { x_ndc, y_ndc, 0.0f, 1.0f };
-
-		cass::Matrix4<float> viewProj = m_Camera.GetViewProjection();
-		cass::Vector4<float> world = viewProj.inverse() * clipPos;
-
-		return { world.x, world.y };
 	}
 
 	void showInfo(float deltaTime)
@@ -253,11 +251,15 @@ protected:
 				" | TexturesSlots: " + std::to_string(Renderer2D::GetStats().TextureCount);
 
 
-			Application::m_Window->SetTitle(title);
+			Application::GetWindow().SetTitle(title);
 
 			m_FrameCount = 0;
 			m_TimeAccumulator = 0.0f;
 		}
+	}
+
+	float getStartX() {
+		return Application::GetWindow().GetWidth() - panelWidth;
 	}
 };
 

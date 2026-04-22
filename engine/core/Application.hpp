@@ -11,7 +11,7 @@ public:
 	Application(const WindowProperties& props);
 	virtual ~Application();
 	void Run();
-
+	
 	inline static Application& Get() { return *s_Instance; }
 	inline Window& GetWindow() { return *m_Window; }
 

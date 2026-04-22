@@ -14,13 +14,13 @@ struct SpriteSheetParams {
 class SpriteSheet
 {
 private:
-    int rows = 0;
-    int cols = 0;
-
     cass::Vector2<float> spriteSizeUV{ 0.0f, 0.0f };
     cass::Vector2<float> spacingUV{ 0.0f, 0.0f };
     cass::Vector2<float> offsetUV{ 0.0f, 0.0f };
 public:
+
+    int rows = 0;
+    int cols = 0;
 
     SpriteSheet() = default;
 
