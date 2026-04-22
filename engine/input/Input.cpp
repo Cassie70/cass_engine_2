@@ -2,35 +2,38 @@
 #include <GLFW/glfw3.h>
 #include "Application.hpp"
 
-bool Input::IsKeyPressed(int keycode) {
-    auto& app = Application::Get();
-    auto* window = static_cast<GLFWwindow*>(
-        app.GetWindow().GetNativeWindow()
-        );
+namespace cass {
 
-    int state = glfwGetKey(window, keycode);
-    return state == GLFW_PRESS || state == GLFW_REPEAT;
-}
+    bool Input::IsKeyPressed(int keycode) {
+        auto& app = Application::Get();
+        auto* window = static_cast<GLFWwindow*>(
+            app.GetWindow().GetNativeWindow()
+            );
 
-bool Input::IsMousePressed(int buttoncode)
-{
-    auto& app = Application::Get();
-    auto* window = static_cast<GLFWwindow*>(
-        app.GetWindow().GetNativeWindow()
-        );
+        int state = glfwGetKey(window, keycode);
+        return state == GLFW_PRESS || state == GLFW_REPEAT;
+    }
 
-    int state = glfwGetMouseButton(window, buttoncode);
-    return state == GLFW_PRESS;
-}
+    bool Input::IsMousePressed(int buttoncode)
+    {
+        auto& app = Application::Get();
+        auto* window = static_cast<GLFWwindow*>(
+            app.GetWindow().GetNativeWindow()
+            );
 
-cass::Vector2<float> Input::GetMousePosition()
-{
-    auto& window = Application::Get().GetWindow();
-    GLFWwindow* glfwWindow = (GLFWwindow*)window.GetNativeWindow();
+        int state = glfwGetMouseButton(window, buttoncode);
+        return state == GLFW_PRESS;
+    }
 
-    double x, y;
-    glfwGetCursorPos(glfwWindow, &x, &y);
+    cass::Vector2<float> Input::GetMousePosition()
+    {
+        auto& window = Application::Get().GetWindow();
+        GLFWwindow* glfwWindow = (GLFWwindow*)window.GetNativeWindow();
+
+        double x, y;
+        glfwGetCursorPos(glfwWindow, &x, &y);
 
 
-    return { (float)x,(float)y };
+        return { (float)x,(float)y };
+    }
 }

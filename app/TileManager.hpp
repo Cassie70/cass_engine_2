@@ -12,8 +12,8 @@ public:
     std::vector<std::vector<uint8_t>> mapTile;
 private:
     Tile tiles[32];
-    SpriteSheet atlas;
-    Texture2D atlasTexture;
+    cass::SpriteSheet atlas;
+    cass::Texture2D atlasTexture;
     
 
     void createTiles() { 
@@ -75,7 +75,7 @@ private:
 
 public:
     TileManager(std::string atlasTexturePath, std::string atlasMapPath) : atlasTexture(atlasTexturePath, {}) {
-        atlas = SpriteSheetParams{
+        atlas = cass::SpriteSheetParams{
             .textureWidth = (int)atlasTexture.GetWidth(),
             .textureHeight = (int)atlasTexture.GetHeight(),
             .spriteWidth = 16,
@@ -100,12 +100,12 @@ public:
 
                 uint8_t tileID = mapTile[i][j];
 
-                Renderer2D::DrawSprite({
+                cass::Renderer2D::DrawSprite({
                     .position = cass::Vector2<float>(j, y),
                     .size = {1,1},
                     .texture = &atlasTexture,
                     .uv = tiles[tileID].uvs
-                    });
+                 });
             }
         }
     }

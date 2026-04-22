@@ -4,24 +4,26 @@
 #include <Application.hpp>
 #include <MouseScrolledEvent .hpp>
 
-cass::Vector2<float> CameraController::ScreenToWorld(const cass::Vector2<float>& screen, float width, float height)
+using namespace cass;
+
+Vector2<float> CameraController::ScreenToWorld(const Vector2<float>& screen, float width, float height)
 {
 	float x_ndc = (2.0f * screen.x) / width - 1.0f;
 	float y_ndc = 1.0f - (2.0f * screen.y) / height;
 
-	cass::Vector4<float> clipPos = { x_ndc, y_ndc, 0.0f, 1.0f };
+	Vector4<float> clipPos = { x_ndc, y_ndc, 0.0f, 1.0f };
 
-	cass::Matrix4<float> viewProj = m_Camera.GetViewProjection();
-	cass::Vector4<float> world = viewProj.inverse() * clipPos;
+	Matrix4<float> viewProj = m_Camera.GetViewProjection();
+	Vector4<float> world = viewProj.inverse() * clipPos;
 
 	return { world.x, world.y };
 }
 
 void CameraController::HandleInputUpdate(float deltaTime, float width, float height)
 {
-	cass::Vector2<float> screen = Input::GetMousePosition();
-	cass::Vector3 camPos = m_Camera.GetPosition();
-	cass::Vector2<float> mouse = Input::GetMousePosition();
+	Vector2<float> screen = Input::GetMousePosition();
+	Vector3<float> camPos = m_Camera.GetPosition();
+	Vector2<float> mouse = Input::GetMousePosition();
 
 	if (Input::IsKeyPressed(GLFW_KEY_KP_ADD)) {
 		float zoom = m_Camera.GetZoom();
@@ -50,9 +52,9 @@ void CameraController::HandleInputUpdate(float deltaTime, float width, float hei
 		}
 
 		// 🔥 calcular con cámara actual
-		cass::Vector2<float> currentWorld = ScreenToWorld(mouse, width, height);
+		Vector2<float> currentWorld = ScreenToWorld(mouse, width, height);
 
-		cass::Vector2<float> delta = m_LastWorldMouse - currentWorld;
+		Vector2<float> delta = m_LastWorldMouse - currentWorld;
 
 		camPos.x += delta.x;
 		camPos.y += delta.y;
@@ -73,7 +75,7 @@ void CameraController::HandleInputUpdate(float deltaTime, float width, float hei
 		if (Input::IsKeyPressed(GLFW_KEY_LEFT)) direction.x -= 1;
 		if (Input::IsKeyPressed(GLFW_KEY_RIGHT)) direction.x += 1;
 
-		velocity = cass::Vector3<float>(direction, 0.0f).SafeNormalize() * 400;
+		velocity = Vector3<float>(direction, 0.0f).SafeNormalize() * 400;
 
 		camPos += velocity * deltaTime;
 	}

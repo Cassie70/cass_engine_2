@@ -10,7 +10,7 @@
 #include <SpriteSheet.hpp>
 #include <MousePressedEvent.hpp>
 
-using v3 = cass::Vector3<float>;
+using namespace cass;
 
 class Editor : public Application {
 private:
@@ -82,11 +82,7 @@ protected:
 			.uv = ss.GetUV(1,1),
 			.origin = {0,0},
 			});
-		Renderer2D::DrawQuad({
-			.transform = cass::Matrix4<float>().translate({0,0}).scale(16),
-			.argb = 0x80FFFFFF,
-			.origin = {0,0},
-		});
+
 		Renderer2D::EndScene();
 
 		Renderer2D::BeginScene(ui_Camera); 
@@ -184,8 +180,7 @@ protected:
 
 					int index = row * uiColumns + col;
 
-					if (index >= 0 && index < ss.rows * ss.cols)
-					{
+					if (index >= 0 && index < ss.rows * ss.cols){
 						selectedRow = index / uiColumns;
 						selectedCol = index % uiColumns;
 					}

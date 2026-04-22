@@ -17,15 +17,15 @@ class Player : public Entity {
 
 private:
 
-	Texture2D texture;
-	SpriteSheet playerSS;
-	SpriteAnimation* currentAnim;
-	SpriteAnimation frontIdle;
-	SpriteAnimation rightIdle;
-	SpriteAnimation upIdle;
-	SpriteAnimation walkRight;
-	SpriteAnimation walkUp;
-	SpriteAnimation walkDown;
+	cass::Texture2D texture;
+	cass::SpriteSheet playerSS;
+	cass::SpriteAnimation* currentAnim;
+	cass::SpriteAnimation frontIdle;
+	cass::SpriteAnimation rightIdle;
+	cass::SpriteAnimation upIdle;
+	cass::SpriteAnimation walkRight;
+	cass::SpriteAnimation walkUp;
+	cass::SpriteAnimation walkDown;
 	Direction orientation;
 	bool walkLeft;
 	float colliderSize;
@@ -33,7 +33,7 @@ private:
 public:
 	Player(): texture("assets/diablito.png",{}) {
 
-		playerSS = SpriteSheetParams{
+		playerSS = cass::SpriteSheetParams{
 			.textureWidth = (int)texture.GetWidth(),
 			.textureHeight = (int)texture.GetHeight(),
 			.spriteWidth = 16,
@@ -43,32 +43,32 @@ public:
 			.spacing = { 1, 1 },
 		};
 
-		frontIdle = SpriteAnimationParams{
+		frontIdle = cass::SpriteAnimationParams{
 			.frames = {{0,2}, {1,2}},
 			.frameTime = 1.0f / 6.0f
 		};
 
-		rightIdle = SpriteAnimationParams{
+		rightIdle = cass::SpriteAnimationParams{
 			.frames = {{0,1}, {1,1}},
 			.frameTime = 1.0f / 6.0f
 		};
 
-		upIdle = SpriteAnimationParams{
+		upIdle = cass::SpriteAnimationParams{
 			.frames = {{0,0},{1,0}},
 			.frameTime = 1.0f / 6.0f
 		};
 
-		walkRight = SpriteAnimationParams{
+		walkRight = cass::SpriteAnimationParams{
 			.frames = {{2,1}, {3,1}},
 			.frameTime = 1.0f/6.0f
 		};
 		
-		walkDown = SpriteAnimationParams{
+		walkDown = cass::SpriteAnimationParams{
 			.frames = {{2,2}, {3,2}},
 			.frameTime = 1.0f / 6.0f
 		};
 
-		walkUp = SpriteAnimationParams{
+		walkUp = cass::SpriteAnimationParams{
 			.frames = {{2,0}, {3,0}},
 			.frameTime = 1.0f / 6.0f
 		};
@@ -91,24 +91,24 @@ public:
 		direction = { 0, 0 };
 		
 
-		if (Input::IsKeyPressed(GLFW_KEY_UP)) {
+		if (cass::Input::IsKeyPressed(GLFW_KEY_UP)) {
 			direction.y += 1;
 			currentAnim = &walkUp;
 			orientation = Direction::UP;
 		}
-		if (Input::IsKeyPressed(GLFW_KEY_DOWN)) {
+		if (cass::Input::IsKeyPressed(GLFW_KEY_DOWN)) {
 			direction.y -= 1;
 			currentAnim = &walkDown;
 			orientation = Direction::DOWN;
 		}
-		if (Input::IsKeyPressed(GLFW_KEY_LEFT)) {
+		if (cass::Input::IsKeyPressed(GLFW_KEY_LEFT)) {
 			direction.x -= 1;
 			currentAnim = &walkRight;
 			orientation = Direction::LEFT;
 			walkLeft = true;
 			
 		}
-		if (Input::IsKeyPressed(GLFW_KEY_RIGHT)) {
+		if (cass::Input::IsKeyPressed(GLFW_KEY_RIGHT)) {
 			direction.x += 1;
 			currentAnim = &walkRight;
 			walkLeft = false;
@@ -185,7 +185,7 @@ public:
 	}
 
 	void draw() {
-		Renderer2D::DrawSprite({
+		cass::Renderer2D::DrawSprite({
 			.position = position,
 			.size = {1,1},
 			.texture = &texture,

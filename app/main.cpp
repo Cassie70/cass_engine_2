@@ -4,15 +4,13 @@
 #include "TileManager.hpp"
 #include <FontManager.hpp>
 
+using namespace cass;
 
 const int originalTileSize = 16;
 const int scale = 4;
 const int tileSize = originalTileSize * scale;
 const int screenCols = 16;
 const int screenRows = 12;
-
-using v3 = cass::Vector3<float>;
-
 
 class SandBox : public Application {
 private:
@@ -54,7 +52,7 @@ protected:
 
 		player.handleInput();
 		player.update(deltaTime, tileManager);
-		v3 newCameraPosition = m_Camera.GetPosition() + (v3(player.position, 0.0f) - m_Camera.GetPosition()) * 0.1f;
+		Vector3<float> newCameraPosition = m_Camera.GetPosition() + (Vector3<float>(player.position, 0.0f) - m_Camera.GetPosition()) * 0.1f;
 
 		m_Camera.SetPosition(newCameraPosition);
 

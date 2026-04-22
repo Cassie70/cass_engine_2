@@ -4,85 +4,88 @@
 #include <stb_image.h>
 #include <iostream>
 
-Texture2D::Texture2D(const std::string& path, const Texture2DParams &params)
-{
-    int width, height, channels;
+namespace cass {
 
-    stbi_set_flip_vertically_on_load(1);
-    unsigned char* data = stbi_load(path.c_str(), &width, &height, &channels, 4);
+    Texture2D::Texture2D(const std::string& path, const Texture2DParams& params)
+    {
+        int width, height, channels;
 
-    if (!data) {
-        std::cerr << "Failed to load texture: " << path << std::endl;
-        return;
+        stbi_set_flip_vertically_on_load(1);
+        unsigned char* data = stbi_load(path.c_str(), &width, &height, &channels, 4);
+
+        if (!data) {
+            std::cerr << "Failed to load texture: " << path << std::endl;
+            return;
+        }
+
+        m_Width = width;
+        m_Height = height;
+
+        glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
+        glTextureStorage2D(m_RendererID, 1, GL_RGBA8, m_Width, m_Height);
+
+        // 👉 Filtros
+        glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, params.MinFilter);
+        glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, params.MagFilter);
+
+        // 👉 Wrapping
+        glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_S, params.WrapS);
+        glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_T, params.WrapT);
+
+        // 👉 Subir imagen
+        glTextureSubImage2D(
+            m_RendererID,
+            0,
+            0, 0,
+            m_Width, m_Height,
+            GL_RGBA,
+            GL_UNSIGNED_BYTE,
+            data
+        );
+
+        // 👉 Mipmaps opcionales
+        if (params.GenerateMipmaps)
+            glGenerateTextureMipmap(m_RendererID);
+
+        stbi_image_free(data);
     }
 
-    m_Width = width;
-    m_Height = height;
+    Texture2D::Texture2D(uint32_t width, uint32_t height, const unsigned char* data)
+    {
+        m_Width = width;
+        m_Height = height;
 
-    glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
-    glTextureStorage2D(m_RendererID, 1, GL_RGBA8, m_Width, m_Height);
+        glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
 
-    // 👉 Filtros
-    glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, params.MinFilter);
-    glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, params.MagFilter);
+        // FreeType genera 1 canal (rojo)
+        glTextureStorage2D(m_RendererID, 1, GL_R8, m_Width, m_Height);
 
-    // 👉 Wrapping
-    glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_S, params.WrapS);
-    glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_T, params.WrapT);
+        glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-    // 👉 Subir imagen
-    glTextureSubImage2D(
-        m_RendererID,
-        0,
-        0, 0,
-        m_Width, m_Height,
-        GL_RGBA,
-        GL_UNSIGNED_BYTE,
-        data
-    );
+        glTextureSubImage2D(
+            m_RendererID,
+            0,
+            0, 0,
+            m_Width, m_Height,
+            GL_RED,
+            GL_UNSIGNED_BYTE,
+            data
+        );
+    }
 
-    // 👉 Mipmaps opcionales
-    if (params.GenerateMipmaps)
-        glGenerateTextureMipmap(m_RendererID);
+    Texture2D::~Texture2D() {
+        if (m_RendererID)
+            glDeleteTextures(1, &m_RendererID);
+    }
 
-    stbi_image_free(data);
-}
+    void Texture2D::Bind(uint32_t slot) const {
+        glBindTextureUnit(slot, m_RendererID);
+    }
 
-Texture2D::Texture2D(uint32_t width, uint32_t height, const unsigned char* data)
-{
-    m_Width = width;
-    m_Height = height;
-
-    glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
-
-    // FreeType genera 1 canal (rojo)
-    glTextureStorage2D(m_RendererID, 1, GL_R8, m_Width, m_Height);
-
-    glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-    glTextureSubImage2D(
-        m_RendererID,
-        0,
-        0, 0,
-        m_Width, m_Height,
-        GL_RED,
-        GL_UNSIGNED_BYTE,
-        data
-    );
-}
-
-Texture2D::~Texture2D() {
-    if (m_RendererID)
-        glDeleteTextures(1, &m_RendererID);
-}
-
-void Texture2D::Bind(uint32_t slot) const {
-    glBindTextureUnit(slot, m_RendererID);
-}
-
-Texture2D::Texture2D(uint32_t id, uint32_t w, uint32_t h)
-    : m_RendererID(id), m_Width(w), m_Height(h) {
+    Texture2D::Texture2D(uint32_t id, uint32_t w, uint32_t h)
+        : m_RendererID(id), m_Width(w), m_Height(h) {
+    }
 }

@@ -2,58 +2,61 @@
 #include <vector>
 #include "SpriteSheet.hpp"
 
-struct SpriteAnimationParams {
-    std::vector<cass::Vector2<int>> frames;
-    float frameTime = 0;
-};
+namespace cass {
+
+    struct SpriteAnimationParams {
+        std::vector<cass::Vector2<int>> frames;
+        float frameTime = 0;
+    };
 
 
-class SpriteAnimation
-{
-private:
-    std::vector<cass::Vector2<int>> frames;
-    float frameTime = 0;
-    int currentFrame = 0;
-    float timer = 0;
-
-public:
-
-    SpriteAnimation() = default;
-
-    SpriteAnimation(const SpriteAnimationParams &params)
-        : frames(params.frames), frameTime(params.frameTime) {
-    }
-
-    void Update(float dt)
+    class SpriteAnimation
     {
-        timer += dt;
-        if (timer >= frameTime && !frames.empty())
-        {
-            timer -= frameTime;
-            currentFrame = (currentFrame + 1) % frames.size();
+    private:
+        std::vector<cass::Vector2<int>> frames;
+        float frameTime = 0;
+        int currentFrame = 0;
+        float timer = 0;
+
+    public:
+
+        SpriteAnimation() = default;
+
+        SpriteAnimation(const SpriteAnimationParams& params)
+            : frames(params.frames), frameTime(params.frameTime) {
         }
-    }
 
-    cass::Vector4<float> GetUV(const SpriteSheet& sheet) const
-    {
-        if (frames.empty()) return cass::Vector4<float>{};
+        void Update(float dt)
+        {
+            timer += dt;
+            if (timer >= frameTime && !frames.empty())
+            {
+                timer -= frameTime;
+                currentFrame = (currentFrame + 1) % frames.size();
+            }
+        }
 
-        const auto& frame = frames[currentFrame];
+        cass::Vector4<float> GetUV(const SpriteSheet& sheet) const
+        {
+            if (frames.empty()) return cass::Vector4<float>{};
 
-        int col = frame.x;
-        int row = frame.y;
+            const auto& frame = frames[currentFrame];
 
-        return sheet.GetUV(row, col);
-    }
+            int col = frame.x;
+            int row = frame.y;
 
-    void Reset()
-    {
-        currentFrame = 0;
-        timer = 0.0f;
-    }
+            return sheet.GetUV(row, col);
+        }
 
-    void SetFrameTime(float time) { frameTime = time; }
-    float GetFrameTime() const { return frameTime; }
+        void Reset()
+        {
+            currentFrame = 0;
+            timer = 0.0f;
+        }
 
-    int GetCurrentFrame() const { return currentFrame; }
-};
+        void SetFrameTime(float time) { frameTime = time; }
+        float GetFrameTime() const { return frameTime; }
+
+        int GetCurrentFrame() const { return currentFrame; }
+    };
+}

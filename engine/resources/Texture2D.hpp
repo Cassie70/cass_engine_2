@@ -4,38 +4,41 @@
 #include <cstdint>
 #include <glad/glad.h>
 
-class Renderer2D; // forward declaration
+namespace cass{
 
-struct Texture2DParams
-{
-    GLint MinFilter = GL_NEAREST;     // Cómo se ve cuando la textura se hace pequeña
-    GLint MagFilter = GL_NEAREST;    // Cómo se ve cuando se agranda
+    class Renderer2D; // forward declaration
 
-    GLint WrapS = GL_REPEAT;         // Repetición horizontal (U / X)
-    GLint WrapT = GL_REPEAT;         // Repetición vertical (V / Y)
+    struct Texture2DParams
+    {
+        GLint MinFilter = GL_NEAREST;     // Cómo se ve cuando la textura se hace pequeña
+        GLint MagFilter = GL_NEAREST;    // Cómo se ve cuando se agranda
 
-    bool GenerateMipmaps = false;    // Si quieres mipmaps
-};
+        GLint WrapS = GL_REPEAT;         // Repetición horizontal (U / X)
+        GLint WrapT = GL_REPEAT;         // Repetición vertical (V / Y)
 
-class Texture2D {
-public:
-    Texture2D(const std::string& path, const Texture2DParams &params);
-    Texture2D(uint32_t width, uint32_t height, const unsigned char* data);
-    ~Texture2D();
+        bool GenerateMipmaps = false;    // Si quieres mipmaps
+    };
 
-    uint32_t GetWidth() const { return m_Width; }
-    uint32_t GetHeight() const { return m_Height; }
+    class Texture2D {
+    public:
+        Texture2D(const std::string& path, const Texture2DParams& params);
+        Texture2D(uint32_t width, uint32_t height, const unsigned char* data);
+        ~Texture2D();
 
-    Texture2D(const Texture2D&) = delete;
-    Texture2D& operator=(const Texture2D&) = delete;
+        uint32_t GetWidth() const { return m_Width; }
+        uint32_t GetHeight() const { return m_Height; }
 
-private:
-    void Bind(uint32_t slot = 0) const;
-    Texture2D(uint32_t rendererID, uint32_t width, uint32_t height);
+        Texture2D(const Texture2D&) = delete;
+        Texture2D& operator=(const Texture2D&) = delete;
 
-    uint32_t m_Width = 0;
-    uint32_t m_Height = 0;
-    uint32_t m_RendererID = 0;
+    private:
+        void Bind(uint32_t slot = 0) const;
+        Texture2D(uint32_t rendererID, uint32_t width, uint32_t height);
 
-    friend class Renderer2D;
-};
+        uint32_t m_Width = 0;
+        uint32_t m_Height = 0;
+        uint32_t m_RendererID = 0;
+
+        friend class Renderer2D;
+    };
+}

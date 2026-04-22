@@ -3,45 +3,48 @@
 #include "Time.hpp"
 #include <Renderer2D.hpp>
 
-Application* Application::s_Instance = nullptr;
+namespace cass {
 
-Application::Application(const WindowProperties& props)
-{
-    s_Instance = this;
-    m_Window = new Window(props);
-    m_Window->SetEventCallback(
-        [this](Event& e) {
-            this->OnEvent(e);
-        }
-    );
+    Application* Application::s_Instance = nullptr;
 
-    deltaTime = 0;
-    Renderer::Init();
-    Renderer2D::Init();
-}
-
-Application::~Application()
-{
-    delete m_Window;
-}
-
-void Application::Run()
-{
-    m_Window->DispatchInitialResize();
-    while (!m_Window->ShouldClose())
+    Application::Application(const WindowProperties& props)
     {
-        deltaTime = Time::GetDeltaTime();
+        s_Instance = this;
+        m_Window = new Window(props);
+        m_Window->SetEventCallback(
+            [this](Event& e) {
+                this->OnEvent(e);
+            }
+        );
 
-        Renderer::BeginFrame();
-        Renderer2D::ResetStats();
-        OnUpdate(deltaTime);
-        Renderer::EndFrame();
-        m_Window->Update();
+        deltaTime = 0;
+        Renderer::Init();
+        Renderer2D::Init();
     }
-}
 
-void Application::SetClearColor(const uint32_t argb)
-{
-    Renderer::SetClearColor(argb);
+    Application::~Application()
+    {
+        delete m_Window;
+    }
+
+    void Application::Run()
+    {
+        m_Window->DispatchInitialResize();
+        while (!m_Window->ShouldClose())
+        {
+            deltaTime = Time::GetDeltaTime();
+
+            Renderer::BeginFrame();
+            Renderer2D::ResetStats();
+            OnUpdate(deltaTime);
+            Renderer::EndFrame();
+            m_Window->Update();
+        }
+    }
+
+    void Application::SetClearColor(const uint32_t argb)
+    {
+        Renderer::SetClearColor(argb);
+    }
 }
 

@@ -1,13 +1,16 @@
 #pragma once
 #include "Event.hpp"
 
-class WindowResizeEvent: public Event {
-public:
-    WindowResizeEvent(int w, int h) : Width(w), Height(h) {}
+namespace cass {
 
-    virtual EventType GetType() const override {
-        return EventType::WindowResize;
-    }
+    class WindowResizeEvent : public Event {
+    public:
+        WindowResizeEvent(int w, int h) : Width(w), Height(h) {}
 
-    int Width, Height;
-};
+        virtual EventType GetType() const override {
+            return EventType::WindowResize;
+        }
+
+        int Width, Height;
+    };
+}

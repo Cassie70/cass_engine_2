@@ -1,19 +1,23 @@
 #pragma once
 #include "Event.hpp"
 
-class MouseMovedEvent : public Event {
-private:
-    float m_X, m_Y;
+namespace cass {
 
-public:
-    MouseMovedEvent(float x, float y)
-        : m_X(x), m_Y(y) {
-    }
+    class MouseMovedEvent : public Event {
 
-    float GetX() const { return m_X; }
-    float GetY() const { return m_Y; }
+    private:
+        float m_X, m_Y;
 
-    EventType GetType() const override {
-        return EventType::MouseMoved;
-    }
-};
+    public:
+        MouseMovedEvent(float x, float y)
+            : m_X(x), m_Y(y) {
+        }
+
+        float GetX() const { return m_X; }
+        float GetY() const { return m_Y; }
+
+        EventType GetType() const override {
+            return EventType::MouseMoved;
+        }
+    };
+}
