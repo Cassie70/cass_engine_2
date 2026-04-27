@@ -35,6 +35,9 @@ private:
 
 	uint32_t arial24;
 	std::vector<std::vector<uint8_t>> mapTile;
+	int mapWidth = 1000;
+	int mapHeight = 1000;
+
 	Texture2D atlasTexture;
 	SpriteSheet ss;
 
@@ -64,6 +67,8 @@ public:
 			.rows = 6,
 			.cols = 5
 		};
+
+		mapTile.resize(mapHeight, std::vector<uint8_t>(mapWidth, 255));
 	}
 
 protected:
@@ -71,17 +76,60 @@ protected:
 	void OnUpdate(float deltaTime) override {
 
 		cameraController.HandleInputUpdate(deltaTime, Application::GetWindow().GetWidth(), Application::GetWindow().GetHeight());
+
+		if (Input::IsMousePressed(Mouse::Left)) {
+			auto mousePos = Input::GetMousePosition();
+
+			// 👇 SOLO si NO estás en el panel UI
+			if (mousePos.x < getStartX()) {
+				PaintAtMouse();
+			}
+		}
+		else if (Input::IsMousePressed(Mouse::Right)) {
+			auto mousePos = Input::GetMousePosition();
+
+			auto world = cameraController.getWorldMouse();
+
+			int halfWidth = mapWidth / 2;
+			int halfHeight = mapHeight / 2;
+
+			int tileX = (int)floor(world.x / 16.0f) + halfWidth;
+			int tileY = (int)floor(world.y / 16.0f) + halfHeight;
+
+			if (mousePos.x < getStartX()) {
+				mapTile[tileY][tileX] = 255;
+			}
+		}
 		
 		Renderer2D::BeginScene(m_Camera);
 
-		DrawGridInfinite(16.0f,0xFF555555,1.0f);
+		int halfWidth = mapWidth / 2;
+		int halfHeight = mapHeight / 2;
 
-		Renderer2D::DrawQuad({
-			.transform = cass::Matrix4<float>().translate({0,0}).scale(16),
-			.texture = &atlasTexture,
-			.uv = ss.GetUV(1,1),
-			.origin = {0,0},
-			});
+		for (int y = 0; y < mapHeight; y++) {
+			for (int x = 0; x < mapWidth; x++) {
+
+				uint8_t tile = mapTile[y][x];
+				if (tile == 255) continue; // vacío
+
+				int row = tile / ss.cols;
+				int col = tile % ss.cols;
+
+				Renderer2D::DrawQuad({
+					.transform = cass::Matrix4<float>()
+						.translate({
+							(x - halfWidth) * 16.0f,
+							(y - halfHeight) * 16.0f
+						})
+						.scale(16.0f),
+					.texture = &atlasTexture,
+					.uv = ss.GetUV(row, col),
+					.origin = {0,0}
+					});
+			}
+		}
+
+		DrawGridInfinite(16.0f, 0xFF555555, 1.0f);
 
 		Renderer2D::EndScene();
 
@@ -172,6 +220,10 @@ protected:
 				auto mousePos = Input::GetMousePosition();
 
 				if (mousePos.x >= getStartX()) {
+					// =========================
+					// UI (seleccionar tile)
+					// =========================
+
 					float localX = mousePos.x - getStartX();
 					float localY = mousePos.y;
 
@@ -180,13 +232,33 @@ protected:
 
 					int index = row * uiColumns + col;
 
-					if (index >= 0 && index < ss.rows * ss.cols){
-						selectedRow = index / uiColumns;
-						selectedCol = index % uiColumns;
+					if (index >= 0 && index < ss.rows * ss.cols) {
+						selectedRow = index / ss.cols;
+						selectedCol = index % ss.cols;
+						hasSelection = true;
 					}
-					std::cout << "Selected: " << selectedRow << ", " << selectedCol << std::endl;
 				}
+				
 			}
+		}
+	}
+
+	void PaintAtMouse() {
+		if (!hasSelection) return;
+
+		auto world = cameraController.getWorldMouse();
+
+		int halfWidth = mapWidth / 2;
+		int halfHeight = mapHeight / 2;
+
+		int tileX = (int)floor(world.x / 16.0f) + halfWidth;
+		int tileY = (int)floor(world.y / 16.0f) + halfHeight;
+
+		if (tileX >= 0 && tileX < mapWidth &&
+			tileY >= 0 && tileY < mapHeight) {
+
+			int atlasIndex = selectedRow * ss.cols + selectedCol;
+			mapTile[tileY][tileX] = atlasIndex;
 		}
 	}
 
@@ -209,6 +281,7 @@ protected:
 		float startX = floor(left / tileSize) * tileSize;
 		float startY = floor(bottom / tileSize) * tileSize;
 
+
 		// Verticales
 		for (float x = startX; x <= right; x += tileSize) {
 			Renderer2D::DrawCartesianLine({
@@ -227,6 +300,25 @@ protected:
 				.argb = color,
 				.weight = weight
 			});
+		}
+
+		if (left <= 0 && right >= 0) {
+			Renderer2D::DrawCartesianLine({
+				.start = { 0, bottom },
+				.end = { 0, top },
+				.argb = 0xFFFF4444, // rojo
+				.weight = weight
+				});
+		}
+
+		// Eje X (horizontal en y = 0)
+		if (bottom <= 0 && top >= 0) {
+			Renderer2D::DrawCartesianLine({
+				.start = { left, 0 },
+				.end = { right, 0 },
+				.argb = 0xFF44FF44, // verde
+				.weight = weight
+				});
 		}
 	}
 
