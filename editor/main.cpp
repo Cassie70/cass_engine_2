@@ -2,13 +2,13 @@
 #include <Renderer2D.hpp>
 #include <FontManager.hpp>
 #include <KeyEvent.hpp>
-#include <GLFW/glfw3.h>
 #include <Input.hpp>
-#include <WindowResizeEvent .hpp>
-#include <MouseScrolledEvent .hpp>
+#include <WindowResizeEvent.hpp>
+#include <MouseScrolledEvent.hpp>
 #include "CameraController.hpp"
 #include <SpriteSheet.hpp>
 #include <MousePressedEvent.hpp>
+#include <Mouse.hpp>
 
 using namespace cass;
 
@@ -166,9 +166,9 @@ protected:
 
 
 		if (e.GetType() == EventType::MousePressed) {
-			auto& mouse = (MousePressedEvent&)e;
+			auto& mouse = static_cast<MousePressedEvent&>(e);
 
-			if (mouse.GetButton() == GLFW_MOUSE_BUTTON_LEFT) {
+			if (mouse.GetButton() == Mouse::Left) {
 				auto mousePos = Input::GetMousePosition();
 
 				if (mousePos.x >= getStartX()) {

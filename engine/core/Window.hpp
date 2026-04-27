@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 #include <functional>
-#include <Event.hpp>
+#include "Event.hpp"
 
 namespace cass {
 

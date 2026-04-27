@@ -2,10 +2,10 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 #include "Window.hpp"
-#include <KeyEvent.hpp>
-#include <WindowResizeEvent .hpp>
-#include <MouseScrolledEvent .hpp>
-#include <MousePressedEvent.hpp>
+#include "KeyEvent.hpp"
+#include "WindowResizeEvent.hpp"
+#include "MouseScrolledEvent.hpp"
+#include "MousePressedEvent.hpp"
 
 namespace cass {
 
@@ -100,11 +100,11 @@ namespace cass {
                 Window* win = (Window*)glfwGetWindowUserPointer(window);
 
                 if (action == GLFW_PRESS) {
-                    KeyPressedEvent e(key);
+                    KeyPressedEvent e(static_cast<Key>(key));
                     win->m_EventCallback(e);
                 }
                 else if (action == GLFW_RELEASE) {
-                    KeyReleasedEvent e(key);
+                    KeyReleasedEvent e(static_cast<Key>(key));
                     win->m_EventCallback(e);
                 }
             });
@@ -115,7 +115,7 @@ namespace cass {
 
                 if (action == GLFW_PRESS)
                 {
-                    MousePressedEvent e(button);
+                    MousePressedEvent e(static_cast<Mouse>(button));
                     win->m_EventCallback(e);
                 }
             });

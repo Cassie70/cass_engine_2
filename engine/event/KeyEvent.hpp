@@ -1,18 +1,19 @@
 #pragma once
 #include "Event.hpp"
+#include <Key.hpp>
 
 namespace cass {
 
     class KeyEvent : public Event {
     protected:
-        int m_KeyCode;
+        Key m_KeyCode;
     public:
-        int GetKeyCode() const { return m_KeyCode; }
+        Key GetKeyCode() const { return m_KeyCode; }
     };
 
     class KeyPressedEvent : public KeyEvent {
     public:
-        KeyPressedEvent(int key) { m_KeyCode = key; }
+        KeyPressedEvent(Key key) { m_KeyCode = key; }
 
         EventType GetType() const override {
             return EventType::KeyPressed;
@@ -21,7 +22,7 @@ namespace cass {
 
     class KeyReleasedEvent : public KeyEvent {
     public:
-        KeyReleasedEvent(int key) {
+        KeyReleasedEvent(Key key) {
             m_KeyCode = key;
         }
 

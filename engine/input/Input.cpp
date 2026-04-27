@@ -4,24 +4,24 @@
 
 namespace cass {
 
-    bool Input::IsKeyPressed(int keycode) {
+    bool Input::IsKeyPressed(Key key) {
         auto& app = Application::Get();
         auto* window = static_cast<GLFWwindow*>(
             app.GetWindow().GetNativeWindow()
             );
 
-        int state = glfwGetKey(window, keycode);
+        int state = glfwGetKey(window, static_cast<int>(key));
         return state == GLFW_PRESS || state == GLFW_REPEAT;
     }
 
-    bool Input::IsMousePressed(int buttoncode)
+    bool Input::IsMousePressed(Mouse button)
     {
         auto& app = Application::Get();
         auto* window = static_cast<GLFWwindow*>(
             app.GetWindow().GetNativeWindow()
             );
 
-        int state = glfwGetMouseButton(window, buttoncode);
+        int state = glfwGetMouseButton(window, static_cast<int>(button));
         return state == GLFW_PRESS;
     }
 

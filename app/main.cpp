@@ -1,8 +1,9 @@
 #include <Application.hpp>
 #include <Renderer2D.hpp>
-#include "Player.hpp"
-#include "TileManager.hpp"
 #include <FontManager.hpp>
+
+#include "TileManager.hpp"
+#include "Player.hpp"
 
 using namespace cass;
 

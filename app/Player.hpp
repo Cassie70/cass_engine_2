@@ -2,11 +2,11 @@
 
 #include <Renderer2D.hpp>
 #include <Input.hpp>
+#include <SpriteSheet.hpp>
+#include <SpriteAnimation.hpp>
+
 #include "Entity.hpp"
-#include "SpriteSheet.hpp"
-#include "SpriteAnimation.hpp"
 #include "TileManager.hpp"
-#include "../engine/dependencies/glfw/include/GLFW/glfw3.h"
 
 enum class Direction
 {
@@ -91,24 +91,24 @@ public:
 		direction = { 0, 0 };
 		
 
-		if (cass::Input::IsKeyPressed(GLFW_KEY_UP)) {
+		if (cass::Input::IsKeyPressed(cass::Key::Up)) {
 			direction.y += 1;
 			currentAnim = &walkUp;
 			orientation = Direction::UP;
 		}
-		if (cass::Input::IsKeyPressed(GLFW_KEY_DOWN)) {
+		if (cass::Input::IsKeyPressed(cass::Key::Down)) {
 			direction.y -= 1;
 			currentAnim = &walkDown;
 			orientation = Direction::DOWN;
 		}
-		if (cass::Input::IsKeyPressed(GLFW_KEY_LEFT)) {
+		if (cass::Input::IsKeyPressed(cass::Key::Left)) {
 			direction.x -= 1;
 			currentAnim = &walkRight;
 			orientation = Direction::LEFT;
 			walkLeft = true;
 			
 		}
-		if (cass::Input::IsKeyPressed(GLFW_KEY_RIGHT)) {
+		if (cass::Input::IsKeyPressed(cass::Key::Right)) {
 			direction.x += 1;
 			currentAnim = &walkRight;
 			walkLeft = false;

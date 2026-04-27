@@ -1,17 +1,20 @@
 #pragma once
 #include "Event.hpp"
+#include <Mouse.hpp>
 
 namespace cass {
 
     class MousePressedEvent : public Event {
 
     private:
-        int m_Button;
+        Mouse m_Button;
 
     public:
-        MousePressedEvent(int button) : m_Button(button) {}
+        MousePressedEvent(Mouse button)
+            : m_Button(button) {
+        }
 
-        int GetButton() const { return m_Button; }
+        Mouse GetButton() const { return m_Button; }
 
         EventType GetType() const override {
             return EventType::MousePressed;

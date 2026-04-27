@@ -1,8 +1,7 @@
 #include "CameraController.hpp"
 #include <Input.hpp>
-#include <GLFW/glfw3.h>
 #include <Application.hpp>
-#include <MouseScrolledEvent .hpp>
+#include <MouseScrolledEvent.hpp>
 
 using namespace cass;
 
@@ -25,7 +24,7 @@ void CameraController::HandleInputUpdate(float deltaTime, float width, float hei
 	Vector3<float> camPos = m_Camera.GetPosition();
 	Vector2<float> mouse = Input::GetMousePosition();
 
-	if (Input::IsKeyPressed(GLFW_KEY_KP_ADD)) {
+	if (Input::IsKeyPressed(Key::KPAdd)) {
 		float zoom = m_Camera.GetZoom();
 		if (zoom >= 0.1f) {
 			zoom -= 0.01f;
@@ -34,7 +33,7 @@ void CameraController::HandleInputUpdate(float deltaTime, float width, float hei
 	}
 
 
-	if (Input::IsKeyPressed(GLFW_KEY_KP_SUBTRACT)) {
+	if (Input::IsKeyPressed(Key::KPSubtract)) {
 		float zoom = m_Camera.GetZoom();
 
 		if (zoom <= 1.5f) {
@@ -43,7 +42,7 @@ void CameraController::HandleInputUpdate(float deltaTime, float width, float hei
 		m_Camera.SetZoom(zoom);
 	}
 
-	if (Input::IsMousePressed(GLFW_MOUSE_BUTTON_MIDDLE))
+	if (Input::IsMousePressed(Mouse::Middle))
 	{
 		if (!m_Dragging)
 		{
@@ -70,10 +69,10 @@ void CameraController::HandleInputUpdate(float deltaTime, float width, float hei
 
 		direction = { 0,0 };
 
-		if (Input::IsKeyPressed(GLFW_KEY_UP)) direction.y += 1;
-		if (Input::IsKeyPressed(GLFW_KEY_DOWN)) direction.y -= 1;
-		if (Input::IsKeyPressed(GLFW_KEY_LEFT)) direction.x -= 1;
-		if (Input::IsKeyPressed(GLFW_KEY_RIGHT)) direction.x += 1;
+		if (Input::IsKeyPressed(Key::Up)) direction.y += 1;
+		if (Input::IsKeyPressed(Key::Down)) direction.y -= 1;
+		if (Input::IsKeyPressed(Key::Left)) direction.x -= 1;
+		if (Input::IsKeyPressed(Key::Right)) direction.x += 1;
 
 		velocity = Vector3<float>(direction, 0.0f).SafeNormalize() * 400;
 
