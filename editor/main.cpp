@@ -23,6 +23,8 @@ private:
 	float accumulator = 0;
 	float frameDt = 0;
 
+	float worldTileSize = 16.0f;
+
 	float uiTileSize = 75.0f;
 	int uiColumns = 5;
 	float panelWidth = uiTileSize* uiColumns;
@@ -51,7 +53,7 @@ public:
 			((float)props.Height) * 0.5f
 		),
 		ui_Camera(0.0f, (float)props.Width, 0.0f, (float)props.Height),
-		cameraController(m_Camera),
+		cameraController(m_Camera, ui_Camera),
 		atlasTexture("assets/atlas.png", Texture2DParams{})
 	{
 		Application::SetClearColor(0xFF121212);
@@ -75,18 +77,16 @@ protected:
 
 	void OnUpdate(float deltaTime) override {
 
+		auto mousePos = Input::GetMousePosition();
+
 		cameraController.HandleInputUpdate(deltaTime, Application::GetWindow().GetWidth(), Application::GetWindow().GetHeight());
 
 		if (Input::IsMousePressed(Mouse::Left)) {
-			auto mousePos = Input::GetMousePosition();
-
-			// 👇 SOLO si NO estás en el panel UI
 			if (mousePos.x < getStartX()) {
 				PaintAtMouse();
 			}
 		}
 		else if (Input::IsMousePressed(Mouse::Right)) {
-			auto mousePos = Input::GetMousePosition();
 
 			auto world = cameraController.getWorldMouse();
 
@@ -100,6 +100,15 @@ protected:
 				mapTile[tileY][tileX] = 255;
 			}
 		}
+
+
+		if (mousePos.x < getStartX()) {
+			GetWindow().SetCursor(CursorType::Arrow);
+		}
+		else {
+			GetWindow().SetCursor(CursorType::Hand);
+		}
+
 		
 		Renderer2D::BeginScene(m_Camera);
 
@@ -115,17 +124,13 @@ protected:
 				int row = tile / ss.cols;
 				int col = tile % ss.cols;
 
-				Renderer2D::DrawQuad({
-					.transform = cass::Matrix4<float>()
-						.translate({
-							(x - halfWidth) * 16.0f,
-							(y - halfHeight) * 16.0f
-						})
-						.scale(16.0f),
+				Renderer2D::DrawSprite({
+					.position = {(x - halfWidth) * worldTileSize,(y - halfHeight) * worldTileSize},
+					.size = {worldTileSize,worldTileSize},
 					.texture = &atlasTexture,
 					.uv = ss.GetUV(row, col),
 					.origin = {0,0}
-					});
+				});
 			}
 		}
 
@@ -133,17 +138,9 @@ protected:
 
 		Renderer2D::EndScene();
 
-		Renderer2D::BeginScene(ui_Camera); 
-
-		Renderer2D::DrawText({
-			.font = arial24,
-			.text = "Screen: " + Input::GetMousePosition().toString() + " | World: "  + cameraController.getWorldMouse().toString(),
-			.position = { 50, 50},
-			.scale = { 1.0f, 1.0f }
-		});
-
 		int index = 0;
 
+		Renderer2D::BeginScene(ui_Camera); 
 		Renderer2D::DrawQuad({
 			.transform = cass::Matrix4<float>().translate({getStartX(), 0}).scale({panelWidth,(float)Application::GetWindow().GetHeight()}),
 			.argb = 0xff2f2f2f,
@@ -197,21 +194,7 @@ protected:
 
 	void OnEvent(Event& e) override
 	{
-		if (e.GetType() == EventType::WindowResize) {
-			auto& resize = (WindowResizeEvent&)e;
-
-			m_Camera.SetProjection(
-				-resize.Width * 0.5f,
-				resize.Width * 0.5f,
-				-resize.Height * 0.5f,
-				resize.Height * 0.5f
-			);
-
-			ui_Camera.SetProjection(0, resize.Width, 0, resize.Height);
-		}
-
 		cameraController.HandleInputEvent(e);
-
 
 		if (e.GetType() == EventType::MousePressed) {
 			auto& mouse = static_cast<MousePressedEvent&>(e);

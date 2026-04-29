@@ -1,5 +1,4 @@
 #include <glad/glad.h>
-#include <GLFW/glfw3.h>
 #include <iostream>
 #include "Window.hpp"
 #include "KeyEvent.hpp"
@@ -144,12 +143,23 @@ namespace cass {
                 window->m_EventCallback(e);
             });
 
+        m_Cursors[CursorType::Arrow] = glfwCreateStandardCursor(GLFW_ARROW_CURSOR);
+        m_Cursors[CursorType::IBeam] = glfwCreateStandardCursor(GLFW_IBEAM_CURSOR);
+        m_Cursors[CursorType::Crosshair] = glfwCreateStandardCursor(GLFW_CROSSHAIR_CURSOR);
+        m_Cursors[CursorType::Hand] = glfwCreateStandardCursor(GLFW_HAND_CURSOR);
+        m_Cursors[CursorType::HResize] = glfwCreateStandardCursor(GLFW_HRESIZE_CURSOR);
+        m_Cursors[CursorType::VResize] = glfwCreateStandardCursor(GLFW_VRESIZE_CURSOR);
+
         std::cout << "Renderer: " << glGetString(GL_RENDERER) << "\n";
         std::cout << "OpenGL: " << glGetString(GL_VERSION) << "\n";
     }
 
     void Window::Shutdown()
     {
+        for (auto& [type, cursor] : m_Cursors)
+        {
+            glfwDestroyCursor(cursor);
+        }
         glfwDestroyWindow((GLFWwindow*)m_Window);
         glfwTerminate();
     }
@@ -228,5 +238,24 @@ namespace cass {
         glViewport(0, 0, width, height);
         WindowResizeEvent e(width, height);
         m_EventCallback(e);
+    }
+
+    void Window::SetCursor(CursorType type)
+    {
+        if (type == m_CurrentCursor)
+            return;
+
+        m_CurrentCursor = type;
+
+        glfwSetCursor((GLFWwindow*)m_Window, m_Cursors[type]);
+    }
+
+    void Window::SetCursorVisible(bool visible)
+    {
+        glfwSetInputMode(
+            (GLFWwindow*)m_Window,
+            GLFW_CURSOR,
+            visible ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_HIDDEN
+        );
     }
 }

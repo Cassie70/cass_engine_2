@@ -6,6 +6,7 @@
 class CameraController {
 private:
 	cass::OrthographicCamera &m_Camera;
+	cass::OrthographicCamera &ui_Camera;
 
 	cass::Vector2<int> direction;
 	cass::Vector3<float> velocity;
@@ -18,7 +19,7 @@ private:
 	cass::Vector2<float> ScreenToWorld(const cass::Vector2<float>& screen, float width, float height);
 
 public:
-	CameraController(cass::OrthographicCamera& camera): m_Camera(camera) {}
+	CameraController(cass::OrthographicCamera& mainCamera, cass::OrthographicCamera& uiCamera): m_Camera(mainCamera), ui_Camera(uiCamera) {}
 
 	void HandleInputUpdate(float deltaTime, float width, float height);
 	void HandleInputEvent(cass::Event& e);

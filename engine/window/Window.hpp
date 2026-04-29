@@ -2,26 +2,17 @@
 #include <string>
 #include <functional>
 #include "Event.hpp"
+#include <CursorType.hpp>
+#define GLFW_INCLUDE_NONE
+#include <GLFW/glfw3.h>
+#include <WindowProperties.hpp>
 
 namespace cass {
-
-    struct WindowProperties {
-        unsigned int Width = 1280;
-        unsigned int Height = 1280;
-        std::string Title = "Application";
-        bool VSync = false;
-
-        bool Fullscreen = false;
-        bool Resizable = true;
-        bool Decorated = true;
-        bool Maximized = false;
-        int PosX = -1;
-        int PosY = -1;
-    };
-
     class Window
     {
     public:
+
+        std::unordered_map<CursorType, GLFWcursor*> m_Cursors;
 
         using EventCallbackFn = std::function<void(Event&)>;
 
@@ -42,6 +33,8 @@ namespace cass {
         void SetVSync(bool enabled);
         void SetTitle(const std::string& title);
         bool IsVSync() const { return m_VSync; }
+        void SetCursor(CursorType type);
+        void SetCursorVisible(bool visible);
 
         void* GetNativeWindow() const { return m_Window; } // GLFWwindow*
         void DispatchInitialResize();
@@ -52,6 +45,7 @@ namespace cass {
         void Shutdown();
 
     private:
+        CursorType m_CurrentCursor = CursorType::Arrow;
         EventCallbackFn m_EventCallback;
         void* m_Window; // GLFWwindow*
         unsigned int m_Width, m_Height;

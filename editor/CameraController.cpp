@@ -2,6 +2,7 @@
 #include <Input.hpp>
 #include <Application.hpp>
 #include <MouseScrolledEvent.hpp>
+#include <WindowResizeEvent.hpp>
 
 using namespace cass;
 
@@ -86,6 +87,19 @@ void CameraController::HandleInputUpdate(float deltaTime, float width, float hei
 
 void CameraController::HandleInputEvent(Event& e)
 {
+	if (e.GetType() == EventType::WindowResize) {
+		auto& resize = (WindowResizeEvent&)e;
+
+		m_Camera.SetProjection(
+			-resize.Width * 0.5f,
+			resize.Width * 0.5f,
+			-resize.Height * 0.5f,
+			resize.Height * 0.5f
+		);
+
+		ui_Camera.SetProjection(0, resize.Width, 0, resize.Height);
+	}
+
 	if (e.GetType() == EventType::MouseScrolled)
 	{
 		auto& scroll = (MouseScrolledEvent&)e;

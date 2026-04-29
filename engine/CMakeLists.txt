@@ -6,7 +6,7 @@ project(cass_engine LANGUAGES C CXX)
 
 add_library(engine STATIC
     "core/Application.cpp"
-    "core/Window.cpp"
+    "window/Window.cpp"
     "renderer/Renderer.cpp"
     "core/Time.cpp" 
     "renderer/Renderer2D.cpp"
@@ -23,6 +23,7 @@ target_include_directories(engine PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/resources
     ${CMAKE_CURRENT_SOURCE_DIR}/input
     ${CMAKE_CURRENT_SOURCE_DIR}/utils
+    ${CMAKE_CURRENT_SOURCE_DIR}/window
     ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/cassLinear
     ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/stb
 )
