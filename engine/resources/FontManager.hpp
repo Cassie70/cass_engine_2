@@ -1,40 +1,43 @@
 #pragma once
-#include <unordered_map>
 #include <ft2build.h>
+
 #include FT_FREETYPE_H
 #include <cass_linear.hpp>
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "Texture2D.hpp"
 
-namespace cass{
 
-	struct FTGlyph {
-		cass::Vector2<float> Size;
-		cass::Vector2<float> Bearing;
-		float Advance;
+namespace cass {
 
-		cass::Vector2<float> UV0;
-		cass::Vector2<float> UV1;
-	};
+struct FTGlyph {
+  cass::Vector2<float> Size;
+  cass::Vector2<float> Bearing;
+  float Advance;
 
-	struct Font
-	{
-		std::unique_ptr<Texture2D> atlas;
-		FTGlyph Glyphs[128];
-		float LineHeight;
-	};
+  cass::Vector2<float> UV0;
+  cass::Vector2<float> UV1;
+};
 
-	class FontManager
-	{
-	public:
-		static void Init();
-		static void Shutdown();
+struct Font {
+  std::unique_ptr<Texture2D> atlas;
+  FTGlyph Glyphs[128];
+  float LineHeight;
+};
 
-		static uint32_t Load(const std::string& path, uint32_t size);
-		static Font* Get(uint32_t handle);
+class FontManager {
+ public:
+  static void Init();
+  static void Shutdown();
 
-	private:
-		static FT_Library s_FreeType;
+  static uint32_t Load(const std::string& path, uint32_t size);
+  static Font* Get(uint32_t handle);
 
-		static std::vector<Font> s_Fonts;
-	};
-}
+ private:
+  static FT_Library s_FreeType;
+
+  static std::vector<Font> s_Fonts;
+};
+}  // namespace cass

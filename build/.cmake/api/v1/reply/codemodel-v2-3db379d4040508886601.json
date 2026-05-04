@@ -1,0 +1,269 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"childIndexes" : 
+					[
+						1,
+						5,
+						6
+					],
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-.-Debug-d0094a50bb2071803777.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.20"
+					},
+					"projectIndex" : 0,
+					"source" : "."
+				},
+				{
+					"build" : "engine",
+					"childIndexes" : 
+					[
+						2,
+						4
+					],
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-engine-Debug-776e2b00c6520ab49d05.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.20"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 1,
+					"source" : "engine",
+					"targetIndexes" : 
+					[
+						2,
+						4
+					]
+				},
+				{
+					"build" : "engine/dependencies/glfw",
+					"childIndexes" : 
+					[
+						3
+					],
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-engine.dependencies.glfw-Debug-685d3c9045ce397b9ea3.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.16"
+					},
+					"parentIndex" : 1,
+					"projectIndex" : 2,
+					"source" : "engine/dependencies/glfw",
+					"targetIndexes" : 
+					[
+						6
+					]
+				},
+				{
+					"build" : "engine/dependencies/glfw/src",
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-engine.dependencies.glfw.src-Debug-7ce515467969a71461a6.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.16"
+					},
+					"parentIndex" : 2,
+					"projectIndex" : 2,
+					"source" : "engine/dependencies/glfw/src",
+					"targetIndexes" : 
+					[
+						5,
+						7
+					]
+				},
+				{
+					"build" : "engine/dependencies/freetype",
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-engine.dependencies.freetype-Debug-bb8735bf5844e3c6c209.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.12"
+					},
+					"parentIndex" : 1,
+					"projectIndex" : 3,
+					"source" : "engine/dependencies/freetype",
+					"targetIndexes" : 
+					[
+						3
+					]
+				},
+				{
+					"build" : "app",
+					"jsonFile" : "directory-app-Debug-7ab44524cbd5ada90c6a.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.20"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "app",
+					"targetIndexes" : 
+					[
+						0
+					]
+				},
+				{
+					"build" : "editor",
+					"jsonFile" : "directory-editor-Debug-f0e908b7e5506a789932.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.20"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "editor",
+					"targetIndexes" : 
+					[
+						1
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"childIndexes" : 
+					[
+						1
+					],
+					"directoryIndexes" : 
+					[
+						0,
+						5,
+						6
+					],
+					"name" : "cass_engine_2",
+					"targetIndexes" : 
+					[
+						0,
+						1
+					]
+				},
+				{
+					"childIndexes" : 
+					[
+						2,
+						3
+					],
+					"directoryIndexes" : 
+					[
+						1
+					],
+					"name" : "cass_engine",
+					"parentIndex" : 0,
+					"targetIndexes" : 
+					[
+						2,
+						4
+					]
+				},
+				{
+					"directoryIndexes" : 
+					[
+						2,
+						3
+					],
+					"name" : "GLFW",
+					"parentIndex" : 1,
+					"targetIndexes" : 
+					[
+						5,
+						6,
+						7
+					]
+				},
+				{
+					"directoryIndexes" : 
+					[
+						4
+					],
+					"name" : "freetype",
+					"parentIndex" : 1,
+					"targetIndexes" : 
+					[
+						3
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 5,
+					"id" : "app::@5f5a17c01335469806cb",
+					"jsonFile" : "target-app-Debug-6f6fa97a68acc07326be.json",
+					"name" : "app",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 6,
+					"id" : "editor::@ed37844f285895dce70e",
+					"jsonFile" : "target-editor-Debug-bda28beb917a7bd14d4c.json",
+					"name" : "editor",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "engine::@4088515cb4035b412499",
+					"jsonFile" : "target-engine-Debug-307013726544be09fa8b.json",
+					"name" : "engine",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 4,
+					"id" : "freetype::@5cee256015cb294ea26e",
+					"jsonFile" : "target-freetype-Debug-844922663546dd603ac5.json",
+					"name" : "freetype",
+					"projectIndex" : 3
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "glad::@4088515cb4035b412499",
+					"jsonFile" : "target-glad-Debug-7cc983a06af57b30b3ee.json",
+					"name" : "glad",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 3,
+					"id" : "glfw::@e19ad3cd096b731f91bd",
+					"jsonFile" : "target-glfw-Debug-31e6c5827241395eb842.json",
+					"name" : "glfw",
+					"projectIndex" : 2
+				},
+				{
+					"directoryIndex" : 2,
+					"id" : "uninstall::@3a6d568398ee65d75446",
+					"jsonFile" : "target-uninstall-Debug-58e8dc9e1382472b6139.json",
+					"name" : "uninstall",
+					"projectIndex" : 2
+				},
+				{
+					"directoryIndex" : 3,
+					"id" : "update_mappings::@e19ad3cd096b731f91bd",
+					"jsonFile" : "target-update_mappings-Debug-11ed0af34aa0e40a9a29.json",
+					"name" : "update_mappings",
+					"projectIndex" : 2
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "C:/Users/Cass/Desktop/cass_engine_2/build",
+		"source" : "C:/Users/Cass/Desktop/cass_engine_2"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 7
+	}
+}

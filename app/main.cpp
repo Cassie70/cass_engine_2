@@ -62,6 +62,20 @@ protected:
 		player.draw();
 		Renderer2D::EndScene();
 
+		Renderer2D::BeginScene(ui_Camera);
+		int worldHeight = tileManager.mapTile.size();
+		int worldWidth = worldHeight > 0 ? tileManager.mapTile[0].size() : 0;
+		std::string sizeText = "Tamano: " + std::to_string(worldWidth) + "x" + std::to_string(worldHeight);
+		Renderer2D::DrawText(TextProperties{
+			.font = arial24,
+			.text = sizeText,
+			.position = {10.0f, static_cast<float>(props.Height) - 30.0f},
+			.scale = {1.0f, 1.0f},
+			.angle = 0.0f,
+			.argb = 0xFFFFFFFF
+		});
+		Renderer2D::EndScene();
+
 		showInfo(deltaTime);
 	}
 
