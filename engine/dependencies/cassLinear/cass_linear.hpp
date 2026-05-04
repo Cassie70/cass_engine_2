@@ -5,7 +5,6 @@
 #include <iostream>
 #include <string>
 
-
 namespace cass {
 template <typename T>
 class Vector2 {
