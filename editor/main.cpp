@@ -85,7 +85,7 @@ class Editor : public Application {
     Renderer2D::BeginScene(ui_Camera);
     ui.Draw(ui_Camera, atlasTexture, ss);
     std::string sizeText =
-      "Tamano del Mundo: " + std::to_string(world.GetWidth()) + "x" +
+      "Tamaño del Mundo: " + std::to_string(world.GetWidth()) + "x" +
       std::to_string(world.GetHeight());
     Renderer2D::DrawText(
       TextProperties{

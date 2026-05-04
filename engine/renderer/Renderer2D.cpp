@@ -445,9 +445,51 @@ namespace cass{
 
 		auto cursor = properties.position;
 
-		for (char c : properties.text)
+		for (size_t i = 0; i < properties.text.length(); )
 		{
-			FTGlyph& g = font->Glyphs[(uint8_t)c];
+			uint32_t codepoint = 0;
+			unsigned char c = properties.text[i];
+			
+			if (c < 0x80) {
+				codepoint = c;
+				i += 1;
+			} else if ((c & 0xE0) == 0xC0) {
+				if (i + 1 < properties.text.length()) {
+					codepoint = ((c & 0x1F) << 6) | (properties.text[i + 1] & 0x3F);
+				}
+				i += 2;
+			} else if ((c & 0xF0) == 0xE0) {
+				if (i + 2 < properties.text.length()) {
+					codepoint = ((c & 0x0F) << 12) | ((properties.text[i + 1] & 0x3F) << 6) | (properties.text[i + 2] & 0x3F);
+				}
+				i += 3;
+			} else if ((c & 0xF8) == 0xF0) {
+				if (i + 3 < properties.text.length()) {
+					codepoint = ((c & 0x07) << 18) | ((properties.text[i + 1] & 0x3F) << 12) | ((properties.text[i + 2] & 0x3F) << 6) | (properties.text[i + 3] & 0x3F);
+				}
+				i += 4;
+			} else {
+				i += 1; // Invalid UTF-8, skip
+			}
+
+			// Manejo de caracteres de control
+			if (codepoint == '\n') {
+				cursor.x = properties.position.x;
+				cursor.y -= font->LineHeight * properties.scale.y; // Ajusta el signo si tu eje Y está invertido (+ en vez de -)
+				continue;
+			} else if (codepoint == '\t') {
+				if (font->Glyphs.find(' ') != font->Glyphs.end()) {
+					cursor.x += font->Glyphs[' '].Advance * 4.0f * properties.scale.x; // Un tab = 4 espacios
+				}
+				continue;
+			}
+
+			// Skip if glyph not loaded
+			if (font->Glyphs.find(codepoint) == font->Glyphs.end()) {
+				continue;
+			}
+
+			FTGlyph& g = font->Glyphs[codepoint];
 
 			float x = cursor.x + g.Bearing.x * properties.scale.x;
 			float y = cursor.y - (g.Size.y - g.Bearing.y) * properties.scale.y;

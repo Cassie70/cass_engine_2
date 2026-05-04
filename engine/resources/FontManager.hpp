@@ -6,6 +6,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <unordered_map>
 
 #include "Texture2D.hpp"
 
@@ -23,7 +24,7 @@ struct FTGlyph {
 
 struct Font {
   std::unique_ptr<Texture2D> atlas;
-  FTGlyph Glyphs[128];
+  std::unordered_map<uint32_t, FTGlyph> Glyphs;
   float LineHeight;
 };
 

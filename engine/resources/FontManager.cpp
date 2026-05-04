@@ -42,9 +42,20 @@ namespace cass{
 
 		Font font;
 
-		// 👉 aquí reutilizas TU código de atlas casi igual
-		const uint32_t ATLAS_WIDTH = 1024;
-		const uint32_t ATLAS_HEIGHT = 1024;
+		// Estimar el tamaño del atlas dinámicamente basado en el tamaño de la fuente
+		uint32_t glyphCount = 256 - 32;
+		// Área estimada más un 50% extra para compensar el empaquetado ineficiente y padding
+		uint32_t estimatedArea = size * size * glyphCount;
+		uint32_t atlasDimension = 128; // Tamaño mínimo
+		while (atlasDimension * atlasDimension < estimatedArea * 1.5f) {
+			atlasDimension *= 2; // Potencias de 2 (256, 512, 1024, 2048...)
+		}
+		
+		// Limitar a 8192 para evitar crashear la GPU con texturas gigantes
+		if (atlasDimension > 8192) atlasDimension = 8192;
+
+		const uint32_t ATLAS_WIDTH = atlasDimension;
+		const uint32_t ATLAS_HEIGHT = atlasDimension;
 		const uint32_t PADDING = 1;
 
 		std::vector<unsigned char> atlasBuffer(
@@ -62,7 +73,7 @@ namespace cass{
 		// Pack glyphs
 		// ===============================
 
-		for (unsigned char c = 0; c < 128; c++)
+		for (FT_ULong c = 32; c < 256; c++)
 		{
 			if (FT_Load_Char(face, c, FT_LOAD_RENDER)) {
 				std::cout << "[Renderer2D] Warning: Failed glyph '" << c << "'\n";
@@ -109,7 +120,7 @@ namespace cass{
 				(float)(y + g->bitmap.rows) / ATLAS_HEIGHT
 			};
 
-			font.Glyphs[c] = glyph;
+			font.Glyphs[(uint32_t)c] = glyph;
 
 			x += g->bitmap.width + PADDING;
 			rowHeight = std::max(rowHeight, g->bitmap.rows);
