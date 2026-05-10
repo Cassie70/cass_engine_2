@@ -1,5 +1,6 @@
 #include "EditorUI.hpp"
 
+#include <FontManager.hpp>
 #include <Input.hpp>
 #include <Mouse.hpp>
 #include <MousePressedEvent.hpp>
@@ -7,22 +8,31 @@
 
 using namespace cass;
 
-EditorUI::EditorUI(cass::Window& window) : m_Window(window) {}
+EditorUI::EditorUI(cass::Window &window) : m_Window(window) {}
 
 void EditorUI::Init(float tileSize, int columns) {
   uiTileSize = tileSize;
   uiColumns = columns;
   panelWidth = uiTileSize * uiColumns;
+  FontManager::Init();
+
+  arial24 = FontManager::Load("assets/arial.ttf", 24);
 }
 
 float EditorUI::GetStartX() const { return m_Window.GetWidth() - panelWidth; }
-
 void EditorUI::Draw(
-  OrthographicCamera& camera, Texture2D& atlas, SpriteSheet& ss
+  OrthographicCamera &camera, Texture2D &atlas, SpriteSheet &ss
 ) {
-  int index = 0;
   int windowWidth = m_Window.GetWidth();
   int windowHeight = m_Window.GetHeight();
+
+  DrawPanel(atlas, ss, windowWidth, windowHeight);
+}
+
+void EditorUI::DrawPanel(
+  Texture2D &atlas, SpriteSheet &ss, int windowWidth, int windowHeight
+) {
+  int index = 0;
 
   Renderer2D::DrawQuad(
     QuadProperties{
@@ -76,7 +86,7 @@ void EditorUI::Draw(
   }
 }
 
-bool EditorUI::HandleMouseClick(float mouseX, float mouseY, SpriteSheet& ss) {
+bool EditorUI::HandleMouseClick(float mouseX, float mouseY, SpriteSheet &ss) {
   if (mouseX >= GetStartX()) {
     float localX = mouseX - GetStartX();
     float localY = mouseY;
@@ -96,9 +106,9 @@ bool EditorUI::HandleMouseClick(float mouseX, float mouseY, SpriteSheet& ss) {
   return false;
 }
 
-bool EditorUI::HandleEvent(Event& e, SpriteSheet& ss) {
+bool EditorUI::HandleEvent(Event &e, SpriteSheet &ss) {
   if (e.GetType() == EventType::MousePressed) {
-    auto& mouse = static_cast<MousePressedEvent&>(e);
+    auto &mouse = static_cast<MousePressedEvent &>(e);
 
     if (mouse.GetButton() == Mouse::Left) {
       auto mousePos = Input::GetMousePosition();

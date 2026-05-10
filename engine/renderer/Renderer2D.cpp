@@ -1,61 +1,61 @@
 #include "Renderer2D.hpp"
-#include <glad/glad.h>
-#include <array>
-#include <vector>
 #include "FontManager.hpp"
+#include <array>
+#include <glad/glad.h>
+#include <vector>
 
-namespace cass{
+namespace cass {
 
-	struct QuadVertex {
-		cass::Vector3<float> Position;
-		uint32_t ColorARGB;
-		cass::Vector2<float> TexCoords;
-		float TexIndex = 0;
-		float ShapeType = 0;
-	};
+struct QuadVertex {
+  cass::Vector3<float> Position;
+  uint32_t ColorARGB;
+  cass::Vector2<float> TexCoords;
+  float TexIndex = 0;
+  float ShapeType = 0;
+};
 
-	struct Renderer2DData {
-		static const uint32_t MaxQuads = 10000;
-		static const uint32_t MaxVertices = MaxQuads * 4;
-		static const uint32_t MaxIndices = MaxQuads * 6;
-		static const uint32_t MaxTextureSlots = 16;
+struct Renderer2DData {
+  static const uint32_t MaxQuads = 10000;
+  static const uint32_t MaxVertices = MaxQuads * 4;
+  static const uint32_t MaxIndices = MaxQuads * 6;
+  static const uint32_t MaxTextureSlots = 16;
 
-		uint32_t VAO = 0, VBO = 0, EBO = 0;
-		QuadVertex* VertexBufferBase = nullptr;
-		QuadVertex* VertexBufferPtr = nullptr;
+  uint32_t VAO = 0, VBO = 0, EBO = 0;
+  QuadVertex *VertexBufferBase = nullptr;
+  QuadVertex *VertexBufferPtr = nullptr;
 
-		uint32_t Shader = 0;
+  uint32_t Shader = 0;
 
-		int ViewProjectionLocation = -1;
+  int ViewProjectionLocation = -1;
 
-		uint32_t IndexCount = 0;
-		std::array<Texture2D*, MaxTextureSlots> TextureSlots;
-		uint32_t TextureSlotIndex = 1;
+  uint32_t IndexCount = 0;
+  std::array<Texture2D *, MaxTextureSlots> TextureSlots;
+  uint32_t TextureSlotIndex = 1;
 
-		Renderer2DStats Stats;
-	};
+  Renderer2DStats Stats;
+};
 
-	static Renderer2DData s_Data;
+static Renderer2DData s_Data;
 
-	static uint32_t CompileShader(uint32_t type, const char* source) {
-		uint32_t id = glCreateShader(type);
-		glShaderSource(id, 1, &source, nullptr);
-		glCompileShader(id);
+static uint32_t CompileShader(uint32_t type, const char *source) {
+  uint32_t id = glCreateShader(type);
+  glShaderSource(id, 1, &source, nullptr);
+  glCompileShader(id);
 
-		int success;
-		glGetShaderiv(id, GL_COMPILE_STATUS, &success);
-		if (!success) {
-			char info[1024];
-			glGetShaderInfoLog(id, 1024, nullptr, info);
-			glDeleteShader(id);
-			return 0;
-		}
+  int success;
+  glGetShaderiv(id, GL_COMPILE_STATUS, &success);
+  if (!success) {
+    char info[1024];
+    glGetShaderInfoLog(id, 1024, nullptr, info);
+    glDeleteShader(id);
+    return 0;
+  }
 
-		return id;
-	}
+  return id;
+}
 
-	static uint32_t CreateShader() {
-		const char* vertexSrc = R"(
+static uint32_t CreateShader() {
+  const char *vertexSrc = R"(
         #version 450 core
 
         layout(location = 0) in vec3 a_Position;
@@ -88,7 +88,7 @@ namespace cass{
         }
     )";
 
-		const char* fragmentSrc = R"(
+  const char *fragmentSrc = R"(
 		#version 450 core
 
 		in vec4 v_Color;
@@ -123,389 +123,401 @@ namespace cass{
 		}
     )";
 
-		uint32_t program = glCreateProgram();
-		uint32_t vs = CompileShader(GL_VERTEX_SHADER, vertexSrc);
-		uint32_t fs = CompileShader(GL_FRAGMENT_SHADER, fragmentSrc);
+  uint32_t program = glCreateProgram();
+  uint32_t vs = CompileShader(GL_VERTEX_SHADER, vertexSrc);
+  uint32_t fs = CompileShader(GL_FRAGMENT_SHADER, fragmentSrc);
 
-		glAttachShader(program, vs);
-		glAttachShader(program, fs);
-		glLinkProgram(program);
+  glAttachShader(program, vs);
+  glAttachShader(program, fs);
+  glLinkProgram(program);
 
-		glDeleteShader(vs);
-		glDeleteShader(fs);
+  glDeleteShader(vs);
+  glDeleteShader(fs);
 
-		return program;
-	}
-
-	const Renderer2DStats& Renderer2D::GetStats()
-	{
-		return s_Data.Stats;
-	}
-
-	void Renderer2D::ResetStats()
-	{
-		s_Data.Stats = {};
-	}
-
-	void Renderer2D::Init() {
-		s_Data.VertexBufferBase = new QuadVertex[s_Data.MaxVertices];
-
-		glGenVertexArrays(1, &s_Data.VAO);
-		glBindVertexArray(s_Data.VAO);
-
-		glGenBuffers(1, &s_Data.VBO);
-		glBindBuffer(GL_ARRAY_BUFFER, s_Data.VBO);
-		glBufferData(GL_ARRAY_BUFFER, s_Data.MaxVertices * sizeof(QuadVertex), nullptr, GL_DYNAMIC_DRAW);
-
-		glEnableVertexAttribArray(0); // position
-		glVertexAttribPointer(
-			0, 3, GL_FLOAT, GL_FALSE,
-			sizeof(QuadVertex),
-			(const void*)offsetof(QuadVertex, Position)
-		);
-
-		glEnableVertexAttribArray(1); // color
-		glVertexAttribIPointer(
-			1, 1, GL_UNSIGNED_INT,
-			sizeof(QuadVertex),
-			(const void*)offsetof(QuadVertex, ColorARGB)
-		);
-
-		glEnableVertexAttribArray(2); // texcoord
-		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE,
-			sizeof(QuadVertex), (const void*)offsetof(QuadVertex, TexCoords));
-
-		glEnableVertexAttribArray(3); // tex index
-		glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE,
-			sizeof(QuadVertex), (const void*)offsetof(QuadVertex, TexIndex));
-
-		glEnableVertexAttribArray(4);
-		glVertexAttribPointer(4, 1, GL_FLOAT, GL_FALSE,
-			sizeof(QuadVertex), (const void*)offsetof(QuadVertex, ShapeType));
-
-		std::vector<uint32_t> indices(Renderer2DData::MaxIndices);
-
-		uint32_t offset = 0;
-		for (uint32_t i = 0; i < Renderer2DData::MaxIndices; i += 6) {
-			indices[i + 0] = offset + 0;
-			indices[i + 1] = offset + 1;
-			indices[i + 2] = offset + 2;
-
-			indices[i + 3] = offset + 2;
-			indices[i + 4] = offset + 3;
-			indices[i + 5] = offset + 0;
-
-			offset += 4;
-		}
-
-		glGenBuffers(1, &s_Data.EBO);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, s_Data.EBO);
-		glBufferData(
-			GL_ELEMENT_ARRAY_BUFFER,
-			indices.size() * sizeof(uint32_t),
-			indices.data(),
-			GL_STATIC_DRAW
-		);
-
-		s_Data.Shader = CreateShader();
-
-		s_Data.ViewProjectionLocation =
-			glGetUniformLocation(s_Data.Shader, "u_ViewProjection");
-
-		int samplers[Renderer2DData::MaxTextureSlots]{};
-
-		for (uint32_t i = 0; i < Renderer2DData::MaxTextureSlots; i++)
-			samplers[i] = i;
-
-		glUseProgram(s_Data.Shader);
-		glUniform1iv(
-			glGetUniformLocation(s_Data.Shader, "u_Textures"),
-			Renderer2DData::MaxTextureSlots,
-			samplers
-		);
-
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-		uint32_t whiteID;
-		glGenTextures(1, &whiteID);
-		glBindTexture(GL_TEXTURE_2D, whiteID);
-
-		uint32_t whitePixel = 0xffffffff;
-
-		glTexImage2D(
-			GL_TEXTURE_2D, 0, GL_RGBA8,
-			1, 1, 0,
-			GL_RGBA, GL_UNSIGNED_BYTE,
-			&whitePixel
-		);
-
-		Texture2D* whiteTexture = new Texture2D(whiteID, 1, 1);
-
-		s_Data.TextureSlots[0] = whiteTexture;
-
-	}
-
-	void Renderer2D::ShutDown()
-	{
-		delete[] s_Data.VertexBufferBase;
-
-		glDeleteProgram(s_Data.Shader);
-		glDeleteBuffers(1, &s_Data.VBO);
-		glDeleteBuffers(1, &s_Data.EBO);
-		glDeleteVertexArrays(1, &s_Data.VAO);
-	}
-
-	void Renderer2D::BeginScene(const OrthographicCamera& camera) {
-		glUseProgram(s_Data.Shader);
-		glUniformMatrix4fv(
-			s_Data.ViewProjectionLocation,
-			1,
-			GL_TRUE,
-			&camera.GetViewProjection().m[0][0]
-		);
-
-		s_Data.IndexCount = 0;
-		s_Data.VertexBufferPtr = s_Data.VertexBufferBase;
-		s_Data.TextureSlotIndex = 1;
-	}
-	void Renderer2D::EndScene()
-	{
-		if (s_Data.IndexCount == 0)
-			return;
-
-		uint32_t size = (uint32_t)(
-			(uint8_t*)s_Data.VertexBufferPtr -
-			(uint8_t*)s_Data.VertexBufferBase
-			);
-
-		glBindBuffer(GL_ARRAY_BUFFER, s_Data.VBO);
-		glBufferSubData(GL_ARRAY_BUFFER, 0, size, s_Data.VertexBufferBase);
-
-		for (uint32_t i = 0; i < s_Data.TextureSlotIndex; i++)
-			s_Data.TextureSlots[i]->Bind(i);
-
-		glUseProgram(s_Data.Shader);
-		glBindVertexArray(s_Data.VAO);
-
-		glDrawElements(GL_TRIANGLES, s_Data.IndexCount, GL_UNSIGNED_INT, nullptr);
-		s_Data.Stats.DrawCalls++;
-		s_Data.Stats.TextureCount += s_Data.TextureSlotIndex;
-
-		s_Data.IndexCount = 0;
-		s_Data.VertexBufferPtr = s_Data.VertexBufferBase;
-		s_Data.TextureSlotIndex = 1;
-	}
-
-	void Renderer2D::DrawQuad(const QuadProperties& properties) {
-
-		auto& data = s_Data;
-
-		if (data.IndexCount >= data.MaxIndices ||
-			data.TextureSlotIndex >= data.MaxTextureSlots)
-		{
-			EndScene();
-			data.IndexCount = 0;
-			data.VertexBufferPtr = data.VertexBufferBase;
-			data.TextureSlotIndex = 1;
-		}
-
-		Texture2D* texture = properties.texture
-			? properties.texture
-			: s_Data.TextureSlots[0];
-
-
-		float textureIndex = 0.0f;
-
-		for (uint32_t i = 0; i < s_Data.TextureSlotIndex; i++) {
-			if (s_Data.TextureSlots[i] == texture) {
-				textureIndex = (float)i;
-				break;
-			}
-		}
-
-		if (textureIndex == 0.0f && texture != s_Data.TextureSlots[0]) {
-
-			if (s_Data.TextureSlotIndex >= s_Data.MaxTextureSlots)
-				EndScene();
-
-			textureIndex = (float)s_Data.TextureSlotIndex;
-			s_Data.TextureSlots[s_Data.TextureSlotIndex] = texture;
-			s_Data.TextureSlotIndex++;
-		}
-
-		cass::Vector4<float> uv = properties.uv;
-
-		cass::Vector2<float> texCoords[4] = {
-			{ uv.x, uv.y }, // bottom-left
-			{ uv.z, uv.y }, // bottom-right
-			{ uv.z, uv.t }, // top-right
-			{ uv.x, uv.t }  // top-left
-		};
-
-		cass::Vector2<float> o = properties.origin;
-
-		cass::Vector4<float> quadPositions[4] = {
-			{-o.x,-o.y,0,1},
-			{1.0f - o.x,-o.y,0,1},
-			{1.0f - o.x,1.0f - o.y,0,1},
-			{-o.x,1.0f - o.y,0,1}
-		};
-
-		for (int i = 0; i < 4; i++) {
-
-			cass::Vector4<float> worldPos =
-				properties.transform * quadPositions[i];
-
-			s_Data.VertexBufferPtr->Position = {
-				worldPos.x,
-				worldPos.y,
-				worldPos.z
-			};
-
-			s_Data.VertexBufferPtr->ColorARGB = properties.argb;
-			s_Data.VertexBufferPtr->TexCoords = texCoords[i];
-			s_Data.VertexBufferPtr->TexIndex = textureIndex;
-			s_Data.VertexBufferPtr->ShapeType = (float)properties.shape;
-			s_Data.VertexBufferPtr++;
-		}
-
-		s_Data.IndexCount += 6;
-		s_Data.Stats.QuadCount++;
-	}
-
-
-
-	void Renderer2D::DrawCartesianLine(const CartesianLineProperties& properties)
-	{
-		float dx = properties.end.x - properties.start.x;
-		float dy = properties.end.y - properties.start.y;
-
-		DrawPolarLine({
-			.start = { properties.start.x, properties.start.y },
-			.length = hypot(dx, dy),
-			.angle = atan2(dy, dx),
-			.argb = properties.argb,
-			.weight = properties.weight
-			});
-	}
-
-	void Renderer2D::DrawPolarLine(const PolarLineProperties& properties)
-	{
-		DrawQuad({
-			.transform = cass::Matrix4<float>()
-				.translate({ properties.start.x, properties.start.y})
-				.rotateZ(properties.angle)
-				.scale({properties.length, properties.weight}),
-			.argb = properties.argb,
-			.origin = {0,properties.origin}
-			});
-	}
-
-	void Renderer2D::DrawCircle(const CircleProperties& properties)
-	{
-		cass::Vector2<float> center;
-		float radius;
-		uint32_t argb = 0xFFFFFFFF;
-		Texture2D* texture = nullptr;
-
-		DrawQuad({
-		.transform = cass::Matrix4<float>()
-			.translate(properties.position)
-			.scale(properties.radius * 2),
-		.argb = properties.argb,
-		.texture = properties.texture,
-		.origin = { 0.5f, 0.5f},
-		.shape = Shape::Circle
-			});
-	}
-
-	void Renderer2D::DrawSprite(const SpriteProperties& properties)
-	{
-
-		cass::Vector2<float> scale = properties.size;
-
-		if (properties.flipX) scale.x *= -1.0f;
-		if (properties.flipY) scale.y *= -1.0f;
-
-		DrawQuad({
-			.transform = cass::Matrix4<float>()
-				.translate(properties.position)
-				.scale(scale)
-				.rotateZ(properties.angle),
-			.texture = properties.texture,
-			.uv = properties.uv,
-			.origin = properties.origin
-			});
-	}
-
-	void Renderer2D::DrawText(const TextProperties& properties)
-	{
-		Font* font = FontManager::Get(properties.font);
-
-		auto cursor = properties.position;
-
-		for (size_t i = 0; i < properties.text.length(); )
-		{
-			uint32_t codepoint = 0;
-			unsigned char c = properties.text[i];
-			
-			if (c < 0x80) {
-				codepoint = c;
-				i += 1;
-			} else if ((c & 0xE0) == 0xC0) {
-				if (i + 1 < properties.text.length()) {
-					codepoint = ((c & 0x1F) << 6) | (properties.text[i + 1] & 0x3F);
-				}
-				i += 2;
-			} else if ((c & 0xF0) == 0xE0) {
-				if (i + 2 < properties.text.length()) {
-					codepoint = ((c & 0x0F) << 12) | ((properties.text[i + 1] & 0x3F) << 6) | (properties.text[i + 2] & 0x3F);
-				}
-				i += 3;
-			} else if ((c & 0xF8) == 0xF0) {
-				if (i + 3 < properties.text.length()) {
-					codepoint = ((c & 0x07) << 18) | ((properties.text[i + 1] & 0x3F) << 12) | ((properties.text[i + 2] & 0x3F) << 6) | (properties.text[i + 3] & 0x3F);
-				}
-				i += 4;
-			} else {
-				i += 1; // Invalid UTF-8, skip
-			}
-
-			// Manejo de caracteres de control
-			if (codepoint == '\n') {
-				cursor.x = properties.position.x;
-				cursor.y -= font->LineHeight * properties.scale.y; // Ajusta el signo si tu eje Y está invertido (+ en vez de -)
-				continue;
-			} else if (codepoint == '\t') {
-				if (font->Glyphs.find(' ') != font->Glyphs.end()) {
-					cursor.x += font->Glyphs[' '].Advance * 4.0f * properties.scale.x; // Un tab = 4 espacios
-				}
-				continue;
-			}
-
-			// Skip if glyph not loaded
-			if (font->Glyphs.find(codepoint) == font->Glyphs.end()) {
-				continue;
-			}
-
-			FTGlyph& g = font->Glyphs[codepoint];
-
-			float x = cursor.x + g.Bearing.x * properties.scale.x;
-			float y = cursor.y - (g.Size.y - g.Bearing.y) * properties.scale.y;
-
-			float w = g.Size.x * properties.scale.x;
-			float h = g.Size.y * properties.scale.y;
-
-			DrawQuad({
-				.transform = cass::Matrix4<float>().translate({ x,y,0 }).scale({ w,h,1 }),
-				.argb = properties.argb,
-				.texture = font->atlas.get(),
-				.uv = { g.UV0.x, g.UV1.y, g.UV1.x, g.UV0.y },
-				.shape = Shape::Text
-				});
-
-			cursor.x += g.Advance * properties.scale.x;
-		}
-	}
+  return program;
 }
+
+const Renderer2DStats &Renderer2D::GetStats() { return s_Data.Stats; }
+
+void Renderer2D::ResetStats() { s_Data.Stats = {}; }
+
+void Renderer2D::Init() {
+  s_Data.VertexBufferBase = new QuadVertex[s_Data.MaxVertices];
+
+  glGenVertexArrays(1, &s_Data.VAO);
+  glBindVertexArray(s_Data.VAO);
+
+  glGenBuffers(1, &s_Data.VBO);
+  glBindBuffer(GL_ARRAY_BUFFER, s_Data.VBO);
+  glBufferData(
+    GL_ARRAY_BUFFER, s_Data.MaxVertices * sizeof(QuadVertex), nullptr,
+    GL_DYNAMIC_DRAW
+  );
+
+  glEnableVertexAttribArray(0); // position
+  glVertexAttribPointer(
+    0, 3, GL_FLOAT, GL_FALSE, sizeof(QuadVertex),
+    (const void *)offsetof(QuadVertex, Position)
+  );
+
+  glEnableVertexAttribArray(1); // color
+  glVertexAttribIPointer(
+    1, 1, GL_UNSIGNED_INT, sizeof(QuadVertex),
+    (const void *)offsetof(QuadVertex, ColorARGB)
+  );
+
+  glEnableVertexAttribArray(2); // texcoord
+  glVertexAttribPointer(
+    2, 2, GL_FLOAT, GL_FALSE, sizeof(QuadVertex),
+    (const void *)offsetof(QuadVertex, TexCoords)
+  );
+
+  glEnableVertexAttribArray(3); // tex index
+  glVertexAttribPointer(
+    3, 1, GL_FLOAT, GL_FALSE, sizeof(QuadVertex),
+    (const void *)offsetof(QuadVertex, TexIndex)
+  );
+
+  glEnableVertexAttribArray(4);
+  glVertexAttribPointer(
+    4, 1, GL_FLOAT, GL_FALSE, sizeof(QuadVertex),
+    (const void *)offsetof(QuadVertex, ShapeType)
+  );
+
+  std::vector<uint32_t> indices(Renderer2DData::MaxIndices);
+
+  uint32_t offset = 0;
+  for (uint32_t i = 0; i < Renderer2DData::MaxIndices; i += 6) {
+    indices[i + 0] = offset + 0;
+    indices[i + 1] = offset + 1;
+    indices[i + 2] = offset + 2;
+
+    indices[i + 3] = offset + 2;
+    indices[i + 4] = offset + 3;
+    indices[i + 5] = offset + 0;
+
+    offset += 4;
+  }
+
+  glGenBuffers(1, &s_Data.EBO);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, s_Data.EBO);
+  glBufferData(
+    GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(uint32_t), indices.data(),
+    GL_STATIC_DRAW
+  );
+
+  s_Data.Shader = CreateShader();
+
+  s_Data.ViewProjectionLocation =
+    glGetUniformLocation(s_Data.Shader, "u_ViewProjection");
+
+  int samplers[Renderer2DData::MaxTextureSlots]{};
+
+  for (uint32_t i = 0; i < Renderer2DData::MaxTextureSlots; i++)
+    samplers[i] = i;
+
+  glUseProgram(s_Data.Shader);
+  glUniform1iv(
+    glGetUniformLocation(s_Data.Shader, "u_Textures"),
+    Renderer2DData::MaxTextureSlots, samplers
+  );
+
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+  uint32_t whiteID;
+  glGenTextures(1, &whiteID);
+  glBindTexture(GL_TEXTURE_2D, whiteID);
+
+  uint32_t whitePixel = 0xffffffff;
+
+  glTexImage2D(
+    GL_TEXTURE_2D, 0, GL_RGBA8, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, &whitePixel
+  );
+
+  Texture2D *whiteTexture = new Texture2D(whiteID, 1, 1);
+
+  s_Data.TextureSlots[0] = whiteTexture;
+}
+
+void Renderer2D::ShutDown() {
+  delete[] s_Data.VertexBufferBase;
+
+  glDeleteProgram(s_Data.Shader);
+  glDeleteBuffers(1, &s_Data.VBO);
+  glDeleteBuffers(1, &s_Data.EBO);
+  glDeleteVertexArrays(1, &s_Data.VAO);
+}
+
+void Renderer2D::BeginScene(const OrthographicCamera &camera) {
+  glUseProgram(s_Data.Shader);
+  glUniformMatrix4fv(
+    s_Data.ViewProjectionLocation, 1, GL_TRUE,
+    &camera.GetViewProjection().m[0][0]
+  );
+
+  s_Data.IndexCount = 0;
+  s_Data.VertexBufferPtr = s_Data.VertexBufferBase;
+  s_Data.TextureSlotIndex = 1;
+}
+void Renderer2D::EndScene() {
+  if (s_Data.IndexCount == 0)
+    return;
+
+  uint32_t size = (uint32_t)((uint8_t *)s_Data.VertexBufferPtr -
+                             (uint8_t *)s_Data.VertexBufferBase);
+
+  glBindBuffer(GL_ARRAY_BUFFER, s_Data.VBO);
+  glBufferSubData(GL_ARRAY_BUFFER, 0, size, s_Data.VertexBufferBase);
+
+  for (uint32_t i = 0; i < s_Data.TextureSlotIndex; i++)
+    s_Data.TextureSlots[i]->Bind(i);
+
+  glUseProgram(s_Data.Shader);
+  glBindVertexArray(s_Data.VAO);
+
+  glDrawElements(GL_TRIANGLES, s_Data.IndexCount, GL_UNSIGNED_INT, nullptr);
+  s_Data.Stats.DrawCalls++;
+  s_Data.Stats.TextureCount += s_Data.TextureSlotIndex;
+
+  s_Data.IndexCount = 0;
+  s_Data.VertexBufferPtr = s_Data.VertexBufferBase;
+  s_Data.TextureSlotIndex = 1;
+}
+
+void Renderer2D::DrawQuad(const QuadProperties &properties) {
+
+  auto &data = s_Data;
+
+  if (
+    data.IndexCount >= data.MaxIndices ||
+    data.TextureSlotIndex >= data.MaxTextureSlots
+  ) {
+    EndScene();
+    data.IndexCount = 0;
+    data.VertexBufferPtr = data.VertexBufferBase;
+    data.TextureSlotIndex = 1;
+  }
+
+  Texture2D *texture =
+    properties.texture ? properties.texture : s_Data.TextureSlots[0];
+
+  float textureIndex = 0.0f;
+
+  for (uint32_t i = 0; i < s_Data.TextureSlotIndex; i++) {
+    if (s_Data.TextureSlots[i] == texture) {
+      textureIndex = (float)i;
+      break;
+    }
+  }
+
+  if (textureIndex == 0.0f && texture != s_Data.TextureSlots[0]) {
+
+    if (s_Data.TextureSlotIndex >= s_Data.MaxTextureSlots)
+      EndScene();
+
+    textureIndex = (float)s_Data.TextureSlotIndex;
+    s_Data.TextureSlots[s_Data.TextureSlotIndex] = texture;
+    s_Data.TextureSlotIndex++;
+  }
+
+  cass::Vector4<float> uv = properties.uv;
+
+  cass::Vector2<float> texCoords[4] = {
+    {uv.x, uv.y}, // bottom-left
+    {uv.z, uv.y}, // bottom-right
+    {uv.z, uv.t}, // top-right
+    {uv.x, uv.t}  // top-left
+  };
+
+  cass::Vector2<float> o = properties.origin;
+
+  cass::Vector4<float> quadPositions[4] = {
+    {-o.x, -o.y, 0, 1},
+    {1.0f - o.x, -o.y, 0, 1},
+    {1.0f - o.x, 1.0f - o.y, 0, 1},
+    {-o.x, 1.0f - o.y, 0, 1}
+  };
+
+  for (int i = 0; i < 4; i++) {
+
+    cass::Vector4<float> worldPos = properties.transform * quadPositions[i];
+
+    s_Data.VertexBufferPtr->Position = {worldPos.x, worldPos.y, worldPos.z};
+
+    s_Data.VertexBufferPtr->ColorARGB = properties.argb;
+    s_Data.VertexBufferPtr->TexCoords = texCoords[i];
+    s_Data.VertexBufferPtr->TexIndex = textureIndex;
+    s_Data.VertexBufferPtr->ShapeType = (float)properties.shape;
+    s_Data.VertexBufferPtr++;
+  }
+
+  s_Data.IndexCount += 6;
+  s_Data.Stats.QuadCount++;
+}
+
+void Renderer2D::DrawCartesianLine(const CartesianLineProperties &properties) {
+  float dx = properties.end.x - properties.start.x;
+  float dy = properties.end.y - properties.start.y;
+
+  DrawPolarLine(
+    {.start = {properties.start.x, properties.start.y},
+     .length = hypot(dx, dy),
+     .angle = atan2(dy, dx),
+     .argb = properties.argb,
+     .weight = properties.weight}
+  );
+}
+
+void Renderer2D::DrawPolarLine(const PolarLineProperties &properties) {
+  DrawQuad(
+    {.transform = cass::Matrix4<float>()
+                    .translate({properties.start.x, properties.start.y})
+                    .rotateZ(properties.angle)
+                    .scale({properties.length, properties.weight}),
+     .argb = properties.argb,
+     .origin = {0, properties.origin}}
+  );
+}
+
+void Renderer2D::DrawCircle(const CircleProperties &properties) {
+  cass::Vector2<float> center;
+  float radius;
+  uint32_t argb = 0xFFFFFFFF;
+  Texture2D *texture = nullptr;
+
+  DrawQuad(
+    {.transform = cass::Matrix4<float>()
+                    .translate(properties.position)
+                    .scale(properties.radius * 2),
+     .argb = properties.argb,
+     .texture = properties.texture,
+     .origin = {0.5f, 0.5f},
+     .shape = Shape::Circle}
+  );
+}
+
+void Renderer2D::DrawSprite(const SpriteProperties &properties) {
+
+  cass::Vector2<float> scale = properties.size;
+
+  if (properties.flipX)
+    scale.x *= -1.0f;
+  if (properties.flipY)
+    scale.y *= -1.0f;
+
+  DrawQuad(
+    {.transform = cass::Matrix4<float>()
+                    .translate(properties.position)
+                    .scale(scale)
+                    .rotateZ(properties.angle),
+     .texture = properties.texture,
+     .uv = properties.uv,
+     .origin = properties.origin}
+  );
+}
+
+cass::Vector2<float> Renderer2D::DrawText(const TextProperties &properties) {
+  Font *font = FontManager::Get(properties.font);
+
+  auto cursor = properties.position;
+  float max_x = properties.position.x;
+  float min_y = properties.position.y;
+  uint32_t prev_glyph_index = 0;
+
+  for (size_t i = 0; i < properties.text.length();) {
+    uint32_t codepoint = 0;
+    unsigned char c = properties.text[i];
+
+    if (c < 0x80) {
+      codepoint = c;
+      i += 1;
+    } else if ((c & 0xE0) == 0xC0) {
+      if (i + 1 < properties.text.length()) {
+        codepoint = ((c & 0x1F) << 6) | (properties.text[i + 1] & 0x3F);
+      }
+      i += 2;
+    } else if ((c & 0xF0) == 0xE0) {
+      if (i + 2 < properties.text.length()) {
+        codepoint = ((c & 0x0F) << 12) |
+                    ((properties.text[i + 1] & 0x3F) << 6) |
+                    (properties.text[i + 2] & 0x3F);
+      }
+      i += 3;
+    } else if ((c & 0xF8) == 0xF0) {
+      if (i + 3 < properties.text.length()) {
+        codepoint = ((c & 0x07) << 18) |
+                    ((properties.text[i + 1] & 0x3F) << 12) |
+                    ((properties.text[i + 2] & 0x3F) << 6) |
+                    (properties.text[i + 3] & 0x3F);
+      }
+      i += 4;
+    } else {
+      i += 1; // Invalid UTF-8, skip
+    }
+
+    // Manejo de caracteres de control
+    if (codepoint == '\n') {
+      cursor.x = properties.position.x;
+      cursor.y -=
+        font->LineHeight *
+        properties.scale
+          .y; // Ajusta el signo si tu eje Y está invertido (+ en vez de -)
+      if (cursor.y < min_y)
+        min_y = cursor.y;
+      prev_glyph_index = 0;
+      continue;
+    } else if (codepoint == '\t') {
+      if (font->Glyphs.find(' ') != font->Glyphs.end()) {
+        cursor.x += font->Glyphs[' '].Advance * 4.0f *
+                    properties.scale.x; // Un tab = 4 espacios
+        if (cursor.x > max_x)
+          max_x = cursor.x;
+      }
+      prev_glyph_index = 0;
+      continue;
+    }
+
+    // Skip if glyph not loaded
+    if (font->Glyphs.find(codepoint) == font->Glyphs.end()) {
+      continue;
+    }
+
+    FTGlyph &g = font->Glyphs[codepoint];
+
+    if (properties.kerning && font->face && prev_glyph_index && g.GlyphIndex) {
+      FT_Vector kerning;
+      FT_Get_Kerning(
+        font->face, prev_glyph_index, g.GlyphIndex, FT_KERNING_DEFAULT, &kerning
+      );
+      cursor.x += (kerning.x >> 6) * properties.scale.x;
+    }
+
+    float x = cursor.x + g.Bearing.x * properties.scale.x;
+    float y = cursor.y - (g.Size.y - g.Bearing.y) * properties.scale.y;
+
+    float w = g.Size.x * properties.scale.x;
+    float h = g.Size.y * properties.scale.y;
+
+    DrawQuad(
+      {.transform =
+         cass::Matrix4<float>().translate({x, y, 0}).scale({w, h, 1}),
+       .argb = properties.argb,
+       .texture = font->atlas.get(),
+       .uv = {g.UV0.x, g.UV1.y, g.UV1.x, g.UV0.y},
+       .shape = Shape::Text}
+    );
+
+    cursor.x += g.Advance * properties.scale.x;
+    if (cursor.x > max_x)
+      max_x = cursor.x;
+
+    prev_glyph_index = g.GlyphIndex;
+  }
+
+  return {
+    max_x - properties.position.x,
+    properties.position.y - min_y + font->LineHeight * properties.scale.y
+  };
+}
+} // namespace cass

@@ -7,17 +7,17 @@
 #include <cass_linear.hpp>
 
 class EditorUI {
- public:
-  EditorUI(cass::Window& window);
+public:
+  EditorUI(cass::Window &window);
 
   void Init(float tileSize, int columns);
   void Draw(
-    cass::OrthographicCamera& camera, cass::Texture2D& atlas,
-    cass::SpriteSheet& ss
+    cass::OrthographicCamera &camera, cass::Texture2D &atlas,
+    cass::SpriteSheet &ss
   );
 
-  bool HandleMouseClick(float mouseX, float mouseY, cass::SpriteSheet& ss);
-  bool HandleEvent(cass::Event& e, cass::SpriteSheet& ss);
+  bool HandleMouseClick(float mouseX, float mouseY, cass::SpriteSheet &ss);
+  bool HandleEvent(cass::Event &e, cass::SpriteSheet &ss);
   void UpdateCursor(float mouseX);
 
   float GetPanelWidth() const { return panelWidth; }
@@ -27,8 +27,15 @@ class EditorUI {
   int GetSelectedRow() const { return selectedRow; }
   int GetSelectedCol() const { return selectedCol; }
 
- private:
-  cass::Window& m_Window;
+private:
+  void DrawPanel(
+    cass::Texture2D &atlas, cass::SpriteSheet &ss, int windowWidth,
+    int windowHeight
+  );
+
+  cass::Window &m_Window;
+  uint32_t arial24;
+  int layer = 0;
 
   float uiTileSize = 75.0f;
   int uiColumns = 5;

@@ -12,7 +12,7 @@
 using namespace cass;
 
 class Editor : public Application {
- private:
+private:
   OrthographicCamera m_Camera;
   OrthographicCamera ui_Camera;
   EditorWorld world;
@@ -24,26 +24,20 @@ class Editor : public Application {
 
   float worldTileSize = 16.0f;
 
-  uint32_t arial24;
-
   Texture2D atlasTexture;
   SpriteSheet ss;
 
- public:
-  Editor(const WindowProperties& props)
+public:
+  Editor(const WindowProperties &props)
       : Application(props),
         m_Camera(
           -((float)props.Width) * 0.5f, ((float)props.Width) * 0.5f,
           -((float)props.Height) * 0.5f, ((float)props.Height) * 0.5f
         ),
         ui_Camera(0.0f, (float)props.Width, 0.0f, (float)props.Height),
-        ui(Application::GetWindow()),
-        cameraController(m_Camera, ui_Camera),
+        ui(Application::GetWindow()), cameraController(m_Camera, ui_Camera),
         atlasTexture("assets/atlas.png", Texture2DParams{}) {
     Application::SetClearColor(0xFF121212);
-    FontManager::Init();
-
-    arial24 = FontManager::Load("assets/arial.ttf", 24);
 
     ss = SpriteSheetParams{
       .textureWidth = (int)atlasTexture.GetWidth(),
@@ -58,7 +52,7 @@ class Editor : public Application {
     ui.Init(75.0f, 5);
   }
 
- protected:
+protected:
   void OnUpdate(float deltaTime) override {
     auto mousePos = Input::GetMousePosition();
     int winW = Application::GetWindow().GetWidth();
@@ -84,25 +78,12 @@ class Editor : public Application {
     world.Draw(m_Camera, atlasTexture, ss, worldTileSize, winW, winH);
     Renderer2D::BeginScene(ui_Camera);
     ui.Draw(ui_Camera, atlasTexture, ss);
-    std::string sizeText =
-      "Tamaño del Mundo: " + std::to_string(world.GetWidth()) + "x" +
-      std::to_string(world.GetHeight());
-    Renderer2D::DrawText(
-      TextProperties{
-        .font = arial24,
-        .text = sizeText,
-        .position = {10.0f, static_cast<float>(winH) - 30.0f},
-        .scale = {1.0f, 1.0f},
-        .angle = 0.0f,
-        .argb = 0xFFFFFFFF
-      }
-    );
     Renderer2D::EndScene();
 
     showInfo(deltaTime);
   }
 
-  void OnEvent(Event& e) override {
+  void OnEvent(Event &e) override {
     cameraController.HandleInputEvent(e);
     ui.HandleEvent(e, ss);
   }
