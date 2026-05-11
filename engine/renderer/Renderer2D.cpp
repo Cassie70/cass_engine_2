@@ -62,14 +62,14 @@ static uint32_t CreateShader() {
         layout(location = 1) in uint a_Color;
         layout(location = 2) in vec2 a_TexCoord;
         layout(location = 3) in float a_TexIndex;
-		layout(location = 4) in float a_ShapeType;
+		    layout(location = 4) in float a_ShapeType;
 
         uniform mat4 u_ViewProjection;
 
         out vec4 v_Color;
         out vec2 v_TexCoord;
         out float v_TexIndex;
-		out float v_ShapeType;
+		    out float v_ShapeType;
 
         vec4 UnpackARGB(uint c) {
             float a = float((c >> 24) & 0xFF) / 255.0;
@@ -83,7 +83,7 @@ static uint32_t CreateShader() {
             v_Color = UnpackARGB(a_Color);
             v_TexCoord = a_TexCoord;
             v_TexIndex = a_TexIndex;
-			v_ShapeType = a_ShapeType; 
+		        v_ShapeType = a_ShapeType; 
             gl_Position = u_ViewProjection * vec4(a_Position, 1.0);
         }
     )";
@@ -460,9 +460,7 @@ cass::Vector2<float> Renderer2D::DrawText(const TextProperties &properties) {
     if (codepoint == '\n') {
       cursor.x = properties.position.x;
       cursor.y -=
-        font->LineHeight *
-        properties.scale
-          .y; // Ajusta el signo si tu eje Y está invertido (+ en vez de -)
+        (font->LineHeight * properties.scale.y + properties.spacing.y);
       if (cursor.y < min_y)
         min_y = cursor.y;
       prev_glyph_index = 0;
@@ -508,7 +506,7 @@ cass::Vector2<float> Renderer2D::DrawText(const TextProperties &properties) {
        .shape = Shape::Text}
     );
 
-    cursor.x += g.Advance * properties.scale.x;
+    cursor.x += g.Advance * properties.scale.x + properties.spacing.x;
     if (cursor.x > max_x)
       max_x = cursor.x;
 

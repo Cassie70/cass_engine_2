@@ -138,5 +138,11 @@ uint32_t FontManager::Load(const std::string &path, uint32_t size) {
   return handle;
 }
 
-Font *FontManager::Get(uint32_t handle) { return &s_Fonts[handle]; }
+Font *FontManager::Get(uint32_t handle) {
+  if (handle >= s_Fonts.size()) {
+    std::cout << "[FontManager] ERROR: Invalid font handle: " << handle << "\n";
+    return nullptr;
+  }
+  return &s_Fonts[handle];
+}
 } // namespace cass

@@ -63,10 +63,11 @@ struct TextProperties {
   const uint32_t font;
   const std::string &text;
   cass::Vector2<float> position;
+  uint32_t argb = 0xFFFFFFFF;
+  cass::Vector2<float> spacing = {0, 0};
+  bool kerning = true;
   cass::Vector2<float> scale = {1.0f, 1.0f};
   float angle = 0.0f;
-  uint32_t argb = 0xFFFFFFFF;
-  bool kerning = true;
 };
 
 class Renderer2D {
