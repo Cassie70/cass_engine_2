@@ -1,122 +1,128 @@
 #pragma once
-#include "Tile.hpp"
-#include <memory>
 #include "Renderer2D.hpp"
+#include "Tile.hpp"
 #include <SpriteSheet.hpp>
-#include <filesystem>
 #include <fstream>
+#include <sstream>
 #include <string>
+#include <vector>
 
 class TileManager {
 public:
-    std::vector<std::vector<uint8_t>> mapTile;
+  std::vector<std::vector<uint8_t>> mapTile;
+
 private:
-    Tile tiles[32];
-    cass::SpriteSheet atlas;
-    cass::Texture2D atlasTexture;
-    
+  Tile tiles[32];
+  cass::engine::SpriteSheet atlas;
+  cass::engine::Texture2D atlasTexture;
 
-    void createTiles() { 
-        tiles[0] = Tile{ false, atlas.GetUV(4,1) }; 
-        tiles[1] = Tile{ true, atlas.GetUV(4,0)};
-        tiles[2] = Tile{ true, atlas.GetUV(3,0) };
-        tiles[3] = Tile{ true, atlas.GetUV(3,1) };
-        tiles[4] = Tile{ false, atlas.GetUV(3,2) };
-        tiles[5] = Tile{ true, atlas.GetUV(4,2) };
-        tiles[6] = Tile{ true, atlas.GetUV(0,3) };
-        tiles[7] = Tile{ true, atlas.GetUV(1,3) };
-        tiles[8] = Tile{ true, atlas.GetUV(2,3) };
-        tiles[9] = Tile{ false, atlas.GetUV(2,0) };
-        tiles[10] = Tile{ false, atlas.GetUV(1,0) };
-        tiles[11] = Tile{ false, atlas.GetUV(0,0) };
-        tiles[12] = Tile{ false, atlas.GetUV(0,1) };
-        tiles[13] = Tile{ false, atlas.GetUV(0,2) };
-        tiles[14] = Tile{ false, atlas.GetUV(1,2) };
-        tiles[15] = Tile{ false, atlas.GetUV(2,2) };
-        tiles[16] = Tile{ false, atlas.GetUV(2,1) };
-        tiles[17] = Tile{ false, atlas.GetUV(1,1) };
-        tiles[18] = Tile{ true, atlas.GetUV(3,3) };
-        tiles[19] = Tile{ true, atlas.GetUV(4,3) };
-        tiles[20] = Tile{ true, atlas.GetUV(4,4) };
-        tiles[21] = Tile{ true, atlas.GetUV(3,4) };
+  void createTiles() {
+    tiles[0] = Tile{false, atlas.GetUV(4, 1)};
+    tiles[1] = Tile{true, atlas.GetUV(4, 0)};
+    tiles[2] = Tile{true, atlas.GetUV(3, 0)};
+    tiles[3] = Tile{true, atlas.GetUV(3, 1)};
+    tiles[4] = Tile{false, atlas.GetUV(3, 2)};
+    tiles[5] = Tile{true, atlas.GetUV(4, 2)};
+    tiles[6] = Tile{true, atlas.GetUV(0, 3)};
+    tiles[7] = Tile{true, atlas.GetUV(1, 3)};
+    tiles[8] = Tile{true, atlas.GetUV(2, 3)};
+    tiles[9] = Tile{false, atlas.GetUV(2, 0)};
+    tiles[10] = Tile{false, atlas.GetUV(1, 0)};
+    tiles[11] = Tile{false, atlas.GetUV(0, 0)};
+    tiles[12] = Tile{false, atlas.GetUV(0, 1)};
+    tiles[13] = Tile{false, atlas.GetUV(0, 2)};
+    tiles[14] = Tile{false, atlas.GetUV(1, 2)};
+    tiles[15] = Tile{false, atlas.GetUV(2, 2)};
+    tiles[16] = Tile{false, atlas.GetUV(2, 1)};
+    tiles[17] = Tile{false, atlas.GetUV(1, 1)};
+    tiles[18] = Tile{true, atlas.GetUV(3, 3)};
+    tiles[19] = Tile{true, atlas.GetUV(4, 3)};
+    tiles[20] = Tile{true, atlas.GetUV(4, 4)};
+    tiles[21] = Tile{true, atlas.GetUV(3, 4)};
+  }
+
+  void readTileMap(const std::string &path) {
+    std::ifstream file(path);
+
+    if (!file.is_open()) {
+      std::cout << "Fail to open tileMap file\n";
+      return;
     }
 
-    void readTileMap(const std::string& path) {
-        std::ifstream file(path);
+    mapTile.clear();
 
-        if (!file.is_open()) {
-            std::cout << "Fail to open tileMap file\n";
-            return;
-        }
+    std::string line;
 
-        mapTile.clear();
+    while (std::getline(file, line)) {
+      std::stringstream ss(line);
+      std::vector<uint8_t> row;
 
-        std::string line;
+      std::string hexValue;
 
-        while (std::getline(file, line)) {
-            std::stringstream ss(line);
-            std::vector<uint8_t> row;
+      while (ss >> hexValue) {
+        uint8_t value = static_cast<uint8_t>(std::stoi(hexValue, nullptr, 16));
+        row.push_back(value);
+      }
 
-            std::string hexValue;
-
-            while (ss >> hexValue) {
-                uint8_t value = static_cast<uint8_t>(
-                    std::stoi(hexValue, nullptr, 16)
-                    );
-                row.push_back(value);
-            }
-
-            mapTile.push_back(row);
-        }
-
-        file.close();
+      mapTile.push_back(row);
     }
 
+    file.close();
+  }
 
 public:
-    TileManager(std::string atlasTexturePath, std::string atlasMapPath) : atlasTexture(atlasTexturePath, {}) {
-        atlas = cass::SpriteSheetParams{
-            .textureWidth = (int)atlasTexture.GetWidth(),
-            .textureHeight = (int)atlasTexture.GetHeight(),
-            .spriteWidth = 16,
-            .spriteHeight = 16,
-            .rows = 2,
-            .cols = 3
-            };
+  TileManager(std::string atlasTexturePath, std::string atlasMapPath)
+      : atlasTexture(atlasTexturePath, {}) {
+    atlas = cass::engine::SpriteSheetParams{
+      .textureWidth = (int)atlasTexture.GetWidth(),
+      .textureHeight = (int)atlasTexture.GetHeight(),
+      .spriteWidth = 16,
+      .spriteHeight = 16,
+      .rows = 2,
+      .cols = 3
+    };
 
-        createTiles();
-        readTileMap(atlasMapPath);
-    }
-    void draw(cass::Vector3<float> cameraPosition, int screenCols, int screenRows) {
-        for (int i = 0; i < mapTile.size(); i++) {
-            for (int j = 0; j < mapTile[i].size(); j++) {
+    createTiles();
+    readTileMap(atlasMapPath);
+  }
+  void draw(
+    cass::linear::Vector3<float> cameraPosition, int screenCols, int screenRows
+  ) {
+    for (int i = 0; i < mapTile.size(); i++) {
+      for (int j = 0; j < mapTile[i].size(); j++) {
 
-                float y = mapTile.size() - i - 1;
+        float y = mapTile.size() - i - 1;
 
-                if (j > cameraPosition.x + (screenCols/2 + 1) || j < cameraPosition.x - (screenCols / 2 + 1) ||
-                    y > cameraPosition.y + (screenRows/2 + 1) || y < cameraPosition.y - (screenRows / 2 + 1)) {
-                    continue;
-                }
-
-                uint8_t tileID = mapTile[i][j];
-
-                cass::Renderer2D::DrawSprite({
-                    .position = cass::Vector2<float>(j, y),
-                    .size = {1,1},
-                    .texture = &atlasTexture,
-                    .uv = tiles[tileID].uvs
-                 });
-            }
+        if (
+          j > cameraPosition.x + (screenCols / 2 + 1) ||
+          j < cameraPosition.x - (screenCols / 2 + 1) ||
+          y > cameraPosition.y + (screenRows / 2 + 1) ||
+          y < cameraPosition.y - (screenRows / 2 + 1)
+        ) {
+          continue;
         }
+
+        uint8_t tileID = mapTile[i][j];
+
+        cass::engine::Renderer2D::DrawSprite(
+          {.position = cass::linear::Vector2<float>(j, y),
+           .size = {1, 1},
+           .texture = &atlasTexture,
+           .uv = tiles[tileID].uvs}
+        );
+      }
     }
+  }
 
-    bool IsSolid(int x, int y) {
-        int mapY = mapTile.size() - y - 1;
+  bool IsSolid(int x, int y) {
+    int mapY = mapTile.size() - y - 1;
 
-        if (mapY < 0 || mapY >= mapTile.size()) return false;
-        if (x < 0 || x >= mapTile[mapY].size()) return false;
+    if (mapY < 0 || mapY >= mapTile.size())
+      return false;
+    if (x < 0 || x >= mapTile[mapY].size())
+      return false;
 
-        uint8_t id = mapTile[mapY][x];
-        return tiles[id].collisionable;
-    }
+    uint8_t id = mapTile[mapY][x];
+    return tiles[id].collisionable;
+  }
 };

@@ -6,9 +6,10 @@
 #include <MousePressedEvent.hpp>
 #include <Renderer2D.hpp>
 
-using namespace cass;
+using namespace cass::engine;
+using namespace cass::linear;
 
-EditorUI::EditorUI(cass::Window &window) : m_Window(window) {}
+EditorUI::EditorUI(Window &window) : m_Window(window) {}
 
 void EditorUI::Init(float tileSize, int columns) {
   uiTileSize = tileSize;
@@ -123,11 +124,11 @@ bool EditorUI::HandleEvent(Event &e, SpriteSheet &ss) {
 
 void EditorUI::UpdateCursor(float mouseX) {
   if (mouseX < GetStartX()) {
-    if (cass::Input::IsMousePressed(cass::Mouse::Middle))
-      m_Window.SetCursor(cass::CursorType::Crosshair);
+    if (Input::IsMousePressed(Mouse::Middle))
+      m_Window.SetCursor(CursorType::Crosshair);
     else
-      m_Window.SetCursor(cass::CursorType::Arrow);
+      m_Window.SetCursor(CursorType::Arrow);
   } else {
-    m_Window.SetCursor(cass::CursorType::Hand);
+    m_Window.SetCursor(CursorType::Hand);
   }
 }

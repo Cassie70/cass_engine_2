@@ -2,22 +2,18 @@
 #include "Event.hpp"
 #include <Mouse.hpp>
 
-namespace cass {
+namespace cass::engine {
 
-    class MousePressedEvent : public Event {
+class MousePressedEvent : public Event {
 
-    private:
-        Mouse m_Button;
+private:
+  Mouse m_Button;
 
-    public:
-        MousePressedEvent(Mouse button)
-            : m_Button(button) {
-        }
+public:
+  MousePressedEvent(Mouse button) : m_Button(button) {}
 
-        Mouse GetButton() const { return m_Button; }
+  Mouse GetButton() const { return m_Button; }
 
-        EventType GetType() const override {
-            return EventType::MousePressed;
-        }
-    };
-}
+  EventType GetType() const override { return EventType::MousePressed; }
+};
+} // namespace cass::engine

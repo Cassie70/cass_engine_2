@@ -4,12 +4,12 @@
 #include <glad/glad.h>
 #include <vector>
 
-namespace cass {
+namespace cass::engine {
 
 struct QuadVertex {
-  cass::Vector3<float> Position;
+  linear::Vector3<float> Position;
   uint32_t ColorARGB;
-  cass::Vector2<float> TexCoords;
+  linear::Vector2<float> TexCoords;
   float TexIndex = 0;
   float ShapeType = 0;
 };
@@ -321,18 +321,18 @@ void Renderer2D::DrawQuad(const QuadProperties &properties) {
     s_Data.TextureSlotIndex++;
   }
 
-  cass::Vector4<float> uv = properties.uv;
+  linear::Vector4<float> uv = properties.uv;
 
-  cass::Vector2<float> texCoords[4] = {
+  linear::Vector2<float> texCoords[4] = {
     {uv.x, uv.y}, // bottom-left
     {uv.z, uv.y}, // bottom-right
     {uv.z, uv.t}, // top-right
     {uv.x, uv.t}  // top-left
   };
 
-  cass::Vector2<float> o = properties.origin;
+  linear::Vector2<float> o = properties.origin;
 
-  cass::Vector4<float> quadPositions[4] = {
+  linear::Vector4<float> quadPositions[4] = {
     {-o.x, -o.y, 0, 1},
     {1.0f - o.x, -o.y, 0, 1},
     {1.0f - o.x, 1.0f - o.y, 0, 1},
@@ -341,7 +341,7 @@ void Renderer2D::DrawQuad(const QuadProperties &properties) {
 
   for (int i = 0; i < 4; i++) {
 
-    cass::Vector4<float> worldPos = properties.transform * quadPositions[i];
+    linear::Vector4<float> worldPos = properties.transform * quadPositions[i];
 
     s_Data.VertexBufferPtr->Position = {worldPos.x, worldPos.y, worldPos.z};
 
@@ -371,7 +371,7 @@ void Renderer2D::DrawCartesianLine(const CartesianLineProperties &properties) {
 
 void Renderer2D::DrawPolarLine(const PolarLineProperties &properties) {
   DrawQuad(
-    {.transform = cass::Matrix4<float>()
+    {.transform = linear::Matrix4<float>()
                     .translate({properties.start.x, properties.start.y})
                     .rotateZ(properties.angle)
                     .scale({properties.length, properties.weight}),
@@ -381,13 +381,13 @@ void Renderer2D::DrawPolarLine(const PolarLineProperties &properties) {
 }
 
 void Renderer2D::DrawCircle(const CircleProperties &properties) {
-  cass::Vector2<float> center;
+  linear::Vector2<float> center;
   float radius;
   uint32_t argb = 0xFFFFFFFF;
   Texture2D *texture = nullptr;
 
   DrawQuad(
-    {.transform = cass::Matrix4<float>()
+    {.transform = linear::Matrix4<float>()
                     .translate(properties.position)
                     .scale(properties.radius * 2),
      .argb = properties.argb,
@@ -399,7 +399,7 @@ void Renderer2D::DrawCircle(const CircleProperties &properties) {
 
 void Renderer2D::DrawSprite(const SpriteProperties &properties) {
 
-  cass::Vector2<float> scale = properties.size;
+  linear::Vector2<float> scale = properties.size;
 
   if (properties.flipX)
     scale.x *= -1.0f;
@@ -407,7 +407,7 @@ void Renderer2D::DrawSprite(const SpriteProperties &properties) {
     scale.y *= -1.0f;
 
   DrawQuad(
-    {.transform = cass::Matrix4<float>()
+    {.transform = linear::Matrix4<float>()
                     .translate(properties.position)
                     .scale(scale)
                     .rotateZ(properties.angle),
@@ -417,7 +417,7 @@ void Renderer2D::DrawSprite(const SpriteProperties &properties) {
   );
 }
 
-cass::Vector2<float> Renderer2D::DrawText(const TextProperties &properties) {
+linear::Vector2<float> Renderer2D::DrawText(const TextProperties &properties) {
   Font *font = FontManager::Get(properties.font);
 
   auto cursor = properties.position;
@@ -499,7 +499,7 @@ cass::Vector2<float> Renderer2D::DrawText(const TextProperties &properties) {
 
     DrawQuad(
       {.transform =
-         cass::Matrix4<float>().translate({x, y, 0}).scale({w, h, 1}),
+         linear::Matrix4<float>().translate({x, y, 0}).scale({w, h, 1}),
        .argb = properties.argb,
        .texture = font->atlas.get(),
        .uv = {g.UV0.x, g.UV1.y, g.UV1.x, g.UV0.y},
@@ -518,4 +518,4 @@ cass::Vector2<float> Renderer2D::DrawText(const TextProperties &properties) {
     properties.position.y - min_y + font->LineHeight * properties.scale.y
   };
 }
-} // namespace cass
+} // namespace cass::engine

@@ -7,28 +7,28 @@
 #include <unordered_map>
 
 class EditorWorld {
- public:
+public:
   EditorWorld();
   void Init();
   void Draw(
-    cass::OrthographicCamera& camera, cass::Texture2D& atlas,
-    cass::SpriteSheet& ss, float worldTileSize, int windowWidth,
+    cass::engine::OrthographicCamera &camera, cass::engine::Texture2D &atlas,
+    cass::engine::SpriteSheet &ss, float worldTileSize, int windowWidth,
     int windowHeight
   );
   void DrawGridInfinite(
-    cass::OrthographicCamera& camera, float tileSize, uint32_t color,
+    cass::engine::OrthographicCamera &camera, float tileSize, uint32_t color,
     float weight, int windowWidth, int windowHeight
   );
 
   void SetTile(int x, int y, uint8_t tile);
   uint8_t GetTile(int x, int y) const;
-  void PaintTileAt(cass::Vector2<float> mouseWorld, int atlasIndex);
-  void EraseTileAt(cass::Vector2<float> mouseWorld);
+  void PaintTileAt(cass::linear::Vector2<float> mouseWorld, int atlasIndex);
+  void EraseTileAt(cass::linear::Vector2<float> mouseWorld);
 
   int GetWidth() const;
   int GetHeight() const;
 
- private:
+private:
   void RecalculateBounds();
   std::unordered_map<uint64_t, uint8_t> mapTile;
   int minX = 0;

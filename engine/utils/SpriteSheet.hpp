@@ -1,7 +1,7 @@
 #pragma once
 #include <cass_linear.hpp>
 
-namespace cass {
+namespace cass::engine {
 
 struct SpriteSheetParams {
   int textureWidth = 0;
@@ -10,15 +10,15 @@ struct SpriteSheetParams {
   int spriteHeight = 0;
   int rows = 0;
   int cols = 0;
-  cass::Vector2<int> spacing = {0, 0};
-  cass::Vector2<int> offset = {0, 0};
+  linear::Vector2<int> spacing = {0, 0};
+  linear::Vector2<int> offset = {0, 0};
 };
 
 class SpriteSheet {
 private:
-  cass::Vector2<float> spriteSizeUV{0.0f, 0.0f};
-  cass::Vector2<float> spacingUV{0.0f, 0.0f};
-  cass::Vector2<float> offsetUV{0.0f, 0.0f};
+  linear::Vector2<float> spriteSizeUV{0.0f, 0.0f};
+  linear::Vector2<float> spacingUV{0.0f, 0.0f};
+  linear::Vector2<float> offsetUV{0.0f, 0.0f};
 
 public:
   int rows = 0;
@@ -38,7 +38,7 @@ public:
     offsetUV = {params.offset.x * invW, params.offset.y * invH};
   }
 
-  cass::Vector4<float> GetUV(int row, int col) const {
+  linear::Vector4<float> GetUV(int row, int col) const {
     float u0 = offsetUV.x + col * (spriteSizeUV.x + spacingUV.x);
     float v0 = offsetUV.y + row * (spriteSizeUV.y + spacingUV.y);
     float u1 = u0 + spriteSizeUV.x;
@@ -46,4 +46,4 @@ public:
     return {u0, v0, u1, v1};
   }
 };
-} // namespace cass
+} // namespace cass::engine

@@ -1,26 +1,27 @@
 #pragma once
-#include <Window.hpp>
 #include <Event.hpp>
+#include <Window.hpp>
 
-namespace cass {
 
-	class Application {
-	private:
-		static Application* s_Instance;
-		float deltaTime;
+namespace cass::engine {
 
-	public:
-		Application(const WindowProperties& props);
-		virtual ~Application();
-		void Run();
+class Application {
+private:
+  static Application *s_Instance;
+  float deltaTime;
 
-		inline static Application& Get() { return *s_Instance; }
-		inline Window& GetWindow() { return *m_Window; }
+public:
+  Application(const WindowProperties &props);
+  virtual ~Application();
+  void Run();
 
-	protected:
-		void SetClearColor(const uint32_t argb);
-		virtual void OnEvent(Event& e) {}
-		virtual void OnUpdate(float deltaTime) {}
-		Window* m_Window;
-	};
-}
+  inline static Application &Get() { return *s_Instance; }
+  inline Window &GetWindow() { return *m_Window; }
+
+protected:
+  void SetClearColor(const uint32_t argb);
+  virtual void OnEvent(Event &e) {}
+  virtual void OnUpdate(float deltaTime) {}
+  Window *m_Window;
+};
+} // namespace cass::engine

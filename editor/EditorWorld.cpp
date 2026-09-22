@@ -2,7 +2,8 @@
 
 #include <Renderer2D.hpp>
 
-using namespace cass;
+using namespace cass::engine;
+using namespace cass::linear;
 
 EditorWorld::EditorWorld() {}
 
@@ -31,10 +32,14 @@ void EditorWorld::RecalculateBounds() {
   for (++it; it != mapTile.end(); ++it) {
     int curY = (int)(it->first >> 32);
     int curX = (int)(it->first & 0xFFFFFFFF);
-    if (curX < minX) minX = curX;
-    if (curX > maxX) maxX = curX;
-    if (curY < minY) minY = curY;
-    if (curY > maxY) maxY = curY;
+    if (curX < minX)
+      minX = curX;
+    if (curX > maxX)
+      maxX = curX;
+    if (curY < minY)
+      minY = curY;
+    if (curY > maxY)
+      maxY = curY;
   }
 }
 
@@ -56,10 +61,14 @@ void EditorWorld::SetTile(int x, int y, uint8_t tile) {
       minY = maxY = y;
       isEmpty = false;
     } else {
-      if (x < minX) minX = x;
-      if (x > maxX) maxX = x;
-      if (y < minY) minY = y;
-      if (y > maxY) maxY = y;
+      if (x < minX)
+        minX = x;
+      if (x > maxX)
+        maxX = x;
+      if (y < minY)
+        minY = y;
+      if (y > maxY)
+        maxY = y;
     }
   }
 }
@@ -85,24 +94,27 @@ void EditorWorld::EraseTileAt(Vector2<float> mouseWorld) {
 }
 
 int EditorWorld::GetWidth() const {
-  if (isEmpty) return 0;
+  if (isEmpty)
+    return 0;
   return maxX - minX + 1;
 }
 
 int EditorWorld::GetHeight() const {
-  if (isEmpty) return 0;
+  if (isEmpty)
+    return 0;
   return maxY - minY + 1;
 }
 
 void EditorWorld::Draw(
-  OrthographicCamera& camera, Texture2D& atlas, SpriteSheet& ss,
+  OrthographicCamera &camera, Texture2D &atlas, SpriteSheet &ss,
   float worldTileSize, int windowWidth, int windowHeight
 ) {
   Renderer2D::BeginScene(camera);
 
-  for (const auto& pair : mapTile) {
+  for (const auto &pair : mapTile) {
     uint8_t tile = pair.second;
-    if (tile == 255) continue;  // vacío
+    if (tile == 255)
+      continue; // vacío
 
     int y = (int)(pair.first >> 32);
     int x = (int)(pair.first & 0xFFFFFFFF);
@@ -127,7 +139,7 @@ void EditorWorld::Draw(
 }
 
 void EditorWorld::DrawGridInfinite(
-  OrthographicCamera& camera, float tileSize, uint32_t color, float weight,
+  OrthographicCamera &camera, float tileSize, uint32_t color, float weight,
   int windowWidth, int windowHeight
 ) {
   Vector3<float> camPos = camera.GetPosition();
@@ -167,7 +179,7 @@ void EditorWorld::DrawGridInfinite(
       CartesianLineProperties{
         .start = {0, bottom},
         .end = {0, top},
-        .argb = 0xFFFF4444,  // rojo
+        .argb = 0xFFFF4444, // rojo
         .weight = weight
       }
     );
@@ -179,7 +191,7 @@ void EditorWorld::DrawGridInfinite(
       CartesianLineProperties{
         .start = {left, 0},
         .end = {right, 0},
-        .argb = 0xFF44FF44,  // verde
+        .argb = 0xFF44FF44, // verde
         .weight = weight
       }
     );

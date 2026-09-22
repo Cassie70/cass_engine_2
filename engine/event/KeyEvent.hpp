@@ -2,32 +2,27 @@
 #include "Event.hpp"
 #include <Key.hpp>
 
-namespace cass {
+namespace cass::engine {
 
-    class KeyEvent : public Event {
-    protected:
-        Key m_KeyCode;
-    public:
-        Key GetKeyCode() const { return m_KeyCode; }
-    };
+class KeyEvent : public Event {
+protected:
+  Key m_KeyCode;
 
-    class KeyPressedEvent : public KeyEvent {
-    public:
-        KeyPressedEvent(Key key) { m_KeyCode = key; }
+public:
+  Key GetKeyCode() const { return m_KeyCode; }
+};
 
-        EventType GetType() const override {
-            return EventType::KeyPressed;
-        }
-    };
+class KeyPressedEvent : public KeyEvent {
+public:
+  KeyPressedEvent(Key key) { m_KeyCode = key; }
 
-    class KeyReleasedEvent : public KeyEvent {
-    public:
-        KeyReleasedEvent(Key key) {
-            m_KeyCode = key;
-        }
+  EventType GetType() const override { return EventType::KeyPressed; }
+};
 
-        EventType GetType() const override {
-            return EventType::KeyReleased;
-        }
-    };
-}
+class KeyReleasedEvent : public KeyEvent {
+public:
+  KeyReleasedEvent(Key key) { m_KeyCode = key; }
+
+  EventType GetType() const override { return EventType::KeyReleased; }
+};
+} // namespace cass::engine

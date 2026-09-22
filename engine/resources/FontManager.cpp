@@ -1,6 +1,6 @@
 #include "FontManager.hpp"
 
-namespace cass {
+namespace cass::engine {
 
 FT_Library FontManager::s_FreeType;
 std::vector<Font> FontManager::s_Fonts;
@@ -145,4 +145,4 @@ Font *FontManager::Get(uint32_t handle) {
   }
   return &s_Fonts[handle];
 }
-} // namespace cass
+} // namespace cass::engine

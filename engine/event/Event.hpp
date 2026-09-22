@@ -1,11 +1,11 @@
 #pragma once
 #include "EventType.hpp"
 
-namespace cass {
+namespace cass::engine {
 
-    class Event {
-    public:
-        virtual EventType GetType() const = 0;
-        bool Handled = false;
-    };
-}
+class Event {
+public:
+  virtual EventType GetType() const = 0;
+  bool Handled = false;
+};
+} // namespace cass::engine

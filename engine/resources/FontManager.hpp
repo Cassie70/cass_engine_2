@@ -10,15 +10,15 @@
 
 #include "Texture2D.hpp"
 
-namespace cass {
+namespace cass::engine {
 
 struct FTGlyph {
-  cass::Vector2<float> Size;
-  cass::Vector2<float> Bearing;
+  linear::Vector2<float> Size;
+  linear::Vector2<float> Bearing;
   float Advance;
 
-  cass::Vector2<float> UV0;
-  cass::Vector2<float> UV1;
+  linear::Vector2<float> UV0;
+  linear::Vector2<float> UV1;
 
   uint32_t GlyphIndex = 0;
 };
@@ -43,4 +43,4 @@ private:
 
   static std::vector<Font> s_Fonts;
 };
-} // namespace cass
+} // namespace cass::engine

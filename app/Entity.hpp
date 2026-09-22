@@ -2,9 +2,9 @@
 #include "../engine/dependencies/cassLinear/cass_linear.hpp"
 
 class Entity {
-	public:
-		cass::Vector2<float> position;
-		cass::Vector2<float> velocity;
-		cass::Vector2<int> direction;
-		float speed = 0;
+public:
+  cass::linear::Vector2<float> position;
+  cass::linear::Vector2<float> velocity;
+  cass::linear::Vector2<int> direction;
+  float speed = 0;
 };

@@ -9,7 +9,8 @@
 #include "EditorUI.hpp"
 #include "EditorWorld.hpp"
 
-using namespace cass;
+using namespace cass::engine;
+using namespace cass::linear;
 
 class Editor : public Application {
 private:
